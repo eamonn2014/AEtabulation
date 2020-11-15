@@ -1,0 +1,387 @@
+---
+title: "AE reporting"
+author: "Eamonn O'Brien<br><small><br>Department of Insanity<br></small>"
+date: "`r Sys.Date()`"
+output:
+  rmdformats::readthedown:
+    thumbnails: false
+    lightbox: false
+    gallery: false
+    highlight: tango
+    use_bookdown: true
+    toc_depth: 3
+    fig_caption: true
+    code_folding: hide
+link-citations: yes
+description: "xxxxxx"
+---
+<style>
+.table {
+	width: 50%;
+}
+p.caption {
+  font-size: 0.8em;
+  color: DarkBlue;
+}
+body { 
+	max-width: 1900px; 
+	margin: 0 auto !important; 
+	margin-right: 0 !important;
+	float: none !important; 
+}
+</style>
+
+```{css, echo=FALSE}
+
+#https://designers.hubspot.com/docs/snippets/design/centering-your-website-using-max-width-and-auto-margins
+#https://github.com/juba/rmdformats/issues/49
+#https://stackoverflow.com/questions/60176526/kableextra-change-font-size-of-table-footnote
+#https://towardsdatascience.com/create-a-word-cloud-with-r-bde3e7422e8a
+ 
+```
+
+
+```{r setup,echo=FALSE,include=FALSE}
+
+  set.seed(234)
+  library(rms)          # automatically engages rms(Hmisc)
+  library(tidyverse)
+  library(kableExtra) 
+  library(knitr) 
+  # wordcloud
+  library(wordcloud)
+  library(wordcloud2)
+  library(RColorBrewer)
+  library(tm)
+  
+  knitrSet(lang='markdown', w=7, h=7, dev='svg', fig.path='folder/')
+  options(prType='html')
+  options(width=200)
+  
+  # format function 
+     formatz <- function(x){
+        if (!is.na(x)  ) {
+          sprintf(x, fmt = '%#.1f')  
+         }
+   }
+ 
+```
+
+# Introduction
+
+Simple AE table example using kable in Rmarkdown
+
+```{r, }
+
+  m <- 10      # m SOC categories we create, each will have m preferred terms
+  n <- 150    # total sample size
+  rate <- 0.33 # AE poisson rate
+  J <- 20      # maximum number of preferred terms that can occur
+
+  
+```
+
+#  Make a fabricated medical dictionary
+
+```{r, }
+
+  myFun <- function(n = 5000) {
+    a1 <- do.call(paste0, replicate(10, sample(LETTERS, n, TRUE), FALSE))
+    a2 <- do.call(paste0, replicate(7, sample(LETTERS, n, TRUE), FALSE))
+    a3 <- do.call(paste0, replicate(8, sample(LETTERS, n, TRUE), FALSE))
+    a4 <- do.call(paste0, replicate(9, sample(LETTERS, n, TRUE), FALSE))
+    paste0("SOC.",a1," ",a2," ",a3, " ", a4,sprintf("%04d", sample(9999, n, TRUE)), sample(LETTERS, n, TRUE))
+  }
+  
+  myFun2 <- function(n = 1) {
+    a1 <- do.call(paste0, replicate(10, sample(LETTERS, n, TRUE), FALSE))
+    a2 <- do.call(paste0, replicate(7, sample(LETTERS, n, TRUE), FALSE))
+    a3 <- do.call(paste0, replicate(8, sample(LETTERS, n, TRUE), FALSE))
+    a4 <- do.call(paste0, replicate(9, sample(LETTERS, n, TRUE), FALSE))
+    paste0("PT.",a1," ",a2," ",a3, " ", a4,sprintf("%04d", sample(9999, n, TRUE)), sample(LETTERS, n, TRUE))
+  }
+  
+ # SOC <- sort(rep(myFun(m), m)) 
+  
+#  PT <-  sort(myFun2(m*m))
+  
+ # db <- data.frame(cbind(SOC,PT))
+  
+  
+   N <- m     # total SOC
+    
+   x <-    myFun(N)
+   p <-    round(runif(N,2,J))   
+   SOC <- sort(rep(x, times=p)) 
+   PT <-  myFun2(length(SOC))
+  
+   db <- data.frame(cbind(SOC,PT))
+  
+  
+```
+
+#  Create some AE data
+
+```{r, }
+
+ id <- 1:n             # patients
+ ae <- rpois(n, rate)  # AEs per person
+ 
+ zeroAE <- id[ae %in% 0]  # these ids have no AEs
+ elements_2_remove <- zeroAE
+ 
+ people.with.AE =   id[!(id %in% elements_2_remove)]
+ people.with.no.AE = id[(id %in% elements_2_remove)]
+ 
+ AE <- ae[!ae %in% 0]
+ 
+ ex <- rep(people.with.AE, AE) 
+ 
+ d1 <- data.frame(cbind(id=ex))
+ d1 <- add_count(d1,id)
+ 
+ d2 <- d1 %>%
+   group_by(id, n) %>%
+   mutate(count = seq(n()))
+
+ #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#people with no AEs
+ people.with.no.AE = id[(id %in% elements_2_remove)]
+ 
+ AE <- ae[ae %in% 0]
+ 
+ d1 <- data.frame(cbind(id=people.with.no.AE, n=0,count=0))
+ 
+ #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ all <- rbind(d1,d2)
+ 
+ all <- plyr::arrange(all, id, count)
+ 
+ names(all) <- c("id","tot.AE","count.AE")
+
+ #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  AES <- db[sample(nrow(db), nrow(d2), replace=TRUE), ]
+ 
+  d2 <- cbind(d2, AES)
+ 
+ #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  d1$SOC="";d1$PT=""
+  
+  all <- rbind(d1,d2)
+  
+  all <- plyr::arrange(all, id, count)
+  
+  names(all) <- c("id","tot.AE","count.AE","SOC","PT")
+ 
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # add trt
+  trt <- sample(c("Treatment A","Treatment B"), n, replace=TRUE)
+  
+  all$treatment <- rep(trt, times=as.vector(table(all$id)))
+  all$treatment <- factor(all$treatment)
+
+```
+
+#  Calculate N
+
+```{r, }  
+  
+  N <- unique(all[, c("id", "treatment")])
+  N0 <- addmargins(table(N$treatment))
+ 
+```
+
+# Calculate the number of patients with at least one AE
+
+```{r, }    
+  
+  N <- unique(all[, c("id", "tot.AE","treatment")])
+  atleast <- N[!N$tot.AE %in% 0,]
+  N1 <- addmargins(table(atleast$treatment))
+
+```
+
+# Manage data for by System order class : Preferred terms
+
+```{r, }  
+
+  fooz<-list()  # this will be used to collect data
+  # PTs within each SOC
+  s <- all[, c("id","SOC","PT","treatment")]
+  s <- unique(s)
+  s<-s[!(s$SOC=="" ),]
+  
+  k <- sort(unique(s$SOC))
+  L <- length(k)
+  for (i in 1:L) {
+   
+    ss <- s[s$SOC %in% k[i],]
+    
+    ss1 <- addmargins(table(ss$PT, ss$treatment))
+    
+        if (nrow(ss) %in% 1) {
+            Tot <- ss1[rownames(ss1) %in% "Sum",]
+            body <- ss1[!rownames(ss1) %in% "Sum",]
+            z <- rbind( Tot , body)
+            rownames(z)[1] <- k[i]    
+            rownames(z)[2] <- paste0("  ",rownames(ss1)[1])    
+            fooz[[i]]<-z  
+            
+        } else {
+    
+           # put SOC at top and indent PTs
+           Tot <- ss1[nrow(ss1),]
+           # select all rows except last
+           body <- ss1[ c(1:(nrow(ss1)-1)),]
+           z <- rbind( Tot , body)
+           rownames(z)[1] <- k[i]    
+           rownames(z)[2:nrow(z)] <- paste0("  ",rownames(z)[2:nrow(z)])   
+           fooz[[i]]<-z  
+        
+        }
+    
+       tmp <- do.call(rbind, fooz)      # bind the groups
+                                    
+       foo99 <- data.frame(tmp)  
+  }
+
+```
+
+#  Build AE table
+
+```{r, }   
+  
+   foo <- rbind(N0,N1,foo99)
+   rownames(foo)[1] <- "Number of patients"
+   rownames(foo)[2] <- "Number of patients with at least one adverse event"
+   foo$Ap <- foo$Treatment.A/N0[1]*100
+   foo$Bp <- foo$Treatment.B/N0[2]*100
+   foo$Tp <- foo$Sum/N0[3]*100
+   foo <- foo[,c("Treatment.A", "Ap","Treatment.B","Bp", "Sum","Tp")]
+   foo$Ap <- formatz(foo$Ap);
+   foo$Bp <- formatz(foo$Bp);
+   foo$Tp <- formatz(foo$Tp);
+   foo$Ap <- with(foo, paste0("(",  foo$Ap , ")"))
+   foo$Bp <- with(foo, paste0("(",  foo$Bp , ")"))
+   foo$Tp <- with(foo, paste0("(",  foo$Tp , ")"))
+   names(foo) <- c("Treatment A", "(%)","Treatment B","(%)", "Total","(%)")
+
+```
+
+#  Print AE table
+
+```{r, }      
+   
+   pt <- grepl( "PT." ,  rownames(foo) )
+   
+   d <- cbind("Primary System Organ Class / Preferred Term"= rownames(foo), foo)
+              
+   rownames(d) <- NULL
+ 
+    # footnotes
+    t1<- "- Adverse events are defined as new or worsening events that occur on or after the first study day of study treatment"
+    t2<-"- A patient with multiple adverse events within a primary system organ class is counted only once"
+    t3<-"- System organ classes are presented in alphabetical order"
+    t4<-"- Preferred terms are sorted within system organ class in alphabetical order"
+    t5<-"- MedDRA version XY.Z has been used for reporting of adverse events"
+    t6<-"- Study ABCMADEUPEFG; Database lock: 10Nov2020"
+
+   
+    tab_1 <-  kable(d ,
+    format = "html", 
+    table.attr = "style='width:80%;'",
+    align = "lcccccc" , 
+    caption = "Adverse events, by primary system organ class and preferred term (Safety Analysis Set)",
+    escape = F
+  ) %>%
+  kable_styling(
+    full_width = T ,
+    bootstrap_options = c("hover", "condensed" , "bordered"),
+    font_size = 14,
+    position = "center", 
+  ) %>% row_spec(0, font_size=14
+  ) %>% add_header_above(c("Adverse events, by primary system organ class and preferred term (Safety Analysis Set)" = 7) , bold = TRUE, font_size=15
+    ) %>% footnote(
+    general = c(t1,t2,t3,t4,t5,t6),
+    general_title = " ",
+    footnote_as_chunk = F ,
+    escape = F
+  ) 
+    
+   add_indent(tab_1, which(pt), level_of_indent = 1)
+
+```
+
+#  Word cloud SOC
+
+```{r, }      
+   
+  # Create a vector containing only the text
+  text <- all$SOC
+  text <- text [! text %in% ""]
+
+  # Create a corpus  
+  docs <- Corpus(VectorSource(text))
+  dtm <- TermDocumentMatrix(docs) 
+  matrix <- as.matrix(dtm) 
+  words <- sort(rowSums(matrix),decreasing=TRUE) 
+  df <- data.frame(word = names(words),freq=words)
+
+  wordcloud(words = df$word, freq = df$freq, min.freq = 1,
+            max.words=200, random.order=FALSE, rot.per=0.35,
+            colors=brewer.pal(8, "Dark2"))
+
+#  wordcloud2(data=df, size=1.6, color='random-dark')
+
+   
+```
+
+#  Word cloud preferred terms
+
+```{r, }      
+   
+  # Create a vector containing only the text
+  text <- all$PT
+  text <- text [! text %in% ""]
+
+  # Create a corpus  
+  docs <- Corpus(VectorSource(text))
+  dtm <- TermDocumentMatrix(docs) 
+  matrix <- as.matrix(dtm) 
+  words <- sort(rowSums(matrix),decreasing=TRUE) 
+  df <- data.frame(word = names(words),freq=words)
+
+  wordcloud(words = df$word, freq = df$freq, min.freq = 1,
+            max.words=200, random.order=FALSE, rot.per=0.35,
+            colors=brewer.pal(8, "Dark2"))
+
+#  wordcloud2(data=df, size=1.6, color='random-dark')
+
+
+```
+
+#  The data
+
+```{r, }   
+   
+ 
+  kable(all ,
+    format = "html", 
+    col.names = c("Patient ID", "Total AE", "AE count" , "System Organ Class", "Preferred Term", "Treatment") ,
+    table.attr = "style='width:80%;'",
+    align = "lcccccc" , 
+  caption = "Adverse events listing, primary system organ class and preferred term (Safety Analysis Set)",
+    escape = F
+  ) %>%
+  kable_styling(
+    full_width = T ,
+    bootstrap_options = c("hover", "condensed" , "bordered"),
+    font_size = 14,
+    position = "center", 
+  ) %>% row_spec(0, font_size=14
+  ) %>% add_header_above(c("Adverse events listing, primary system organ class and preferred term (Safety Analysis Set)" = 6) , bold = TRUE, font_size=15
+    )  
+  
+``` 
+# Computing Environment
+
+`r markupSpecs$html$session()`
