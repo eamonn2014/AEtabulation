@@ -86,6 +86,7 @@ Simple AE table example using kable in Rmarkdown
 ```{r, }
 
   require(stringi)
+  require(word.alignment)
 
   myFun <- function(free="SOC.",n=1) { 
     
@@ -95,12 +96,16 @@ Simple AE table example using kable in Rmarkdown
   }
   
   N   <-  m
-  x   <-  replicate(N, myFun())
-  p   <-  round(runif(N,2,J))   
-  SOC <-  sort(rep(x, times=p)) 
-  PT  <-  replicate(length(SOC), myFun(free="PT."))
-  db  <-  data.frame(cbind(SOC,PT))
-
+  x   <-  replicate(N, myFun()) # create N SOC groups
+  p   <-  round(runif(N,2,J))   # size of SOC groups
+  SOC <-  sort(rep(x, times=p)) # fill out the SOCs
+  PT  <-  replicate(length(SOC), myFun(free="PT."))  # create unique Preferred terms 
+  SOC <-  str_to_sentence(SOC)   # changes case so only first letter is uppercase
+  PT <-   str_to_sentence(PT)    # changes case so only first letter is uppercase
+  PT <- gsub("Pt","PT",PT)       # change case back
+  SOC <- gsub("Soc","SOC",SOC)   # change case back
+  db  <-  data.frame(cbind(SOC,PT))  # bind together, we now have the dictionary!
+  
   
 ```
 
@@ -255,7 +260,7 @@ Simple AE table example using kable in Rmarkdown
 
 ```{r, }      
    
-   pt <- grepl( "PT." ,  rownames(foo) )
+   pt <- grepl( "PT." ,  rownames(foo) ) # indent this term 
    
    d <- cbind("Primary System Organ Class / Preferred Term"= rownames(foo), foo)
               
@@ -369,7 +374,7 @@ Simple AE table example using kable in Rmarkdown
 
 #  Try Hmisc
 
-This will straight out count SOCs, ignoring patient IDs, and multiple occurrences within patients So will need to do further manipulation
+This will straight out count SOCs, ignoring patient IDs and therefore multiple occurrences within patients , so this require further manipulation
 
 ```{r, }   
 
