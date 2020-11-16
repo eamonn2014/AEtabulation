@@ -90,8 +90,9 @@ Simple AE table example using kable in Rmarkdown
 
   myFun <- function(free="SOC.",n=1) { 
     
-    paste0(free,paste(stri_rand_strings(sample(2:5,1), 
-                                        sample(2:10, n, replace=TRUE)), 
+    paste0(free,paste(stri_rand_strings(sample(4:8,1),   # no of words
+                                        sample(4:12,1)), # no of letters in words
+                      #pattern = "[A-Za-z]",
                       collapse= " "))
   }
   
