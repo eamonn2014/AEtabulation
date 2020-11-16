@@ -369,15 +369,24 @@ Simple AE table example using kable in Rmarkdown
 
 #  Try Hmisc
 
-This will straight out count SOCs, ignoring patient IDs, and multiple occurrences within patients!
+This will straight out count SOCs, ignoring patient IDs, and multiple occurrences within patients So will need to do further manipulation
 
 ```{r, }   
 
-  addmargins(table(all$SOC, all$treatment))
+
   
   f <- summaryM(SOC ~ treatment,   data=all,overall=TRUE,  test=FALSE )
   html(f)
   #plot(f)
+  
+```
+ 
+Basic table that matches Hmisc
+
+```{r, }     
+  
+  addmargins(table(all$SOC, all$treatment))
+    
   # 
   # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   #  ###patients with aleast one...look at title only
