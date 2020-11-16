@@ -73,10 +73,10 @@ Simple AE table example using kable in Rmarkdown
 
 ```{r, }
 
-  m <- 10      # m SOC categories we create, each will have m preferred terms
-  n <- 150    # total sample size
-  rate <- 0.33 # AE poisson rate
-  J <- 20      # maximum number of preferred terms that can occur
+  m    <- 10      # m SOC categories we create, each will have m preferred terms
+  n    <- 150     # total sample size
+  rate <- 0.33    # AE poisson rate
+  J    <- 20      # maximum number of preferred terms that can occur
 
   
 ```
@@ -85,38 +85,22 @@ Simple AE table example using kable in Rmarkdown
 
 ```{r, }
 
-  myFun <- function(n = 5000) {
-    a1 <- do.call(paste0, replicate(10, sample(LETTERS, n, TRUE), FALSE))
-    a2 <- do.call(paste0, replicate(7, sample(LETTERS, n, TRUE), FALSE))
-    a3 <- do.call(paste0, replicate(8, sample(LETTERS, n, TRUE), FALSE))
-    a4 <- do.call(paste0, replicate(9, sample(LETTERS, n, TRUE), FALSE))
-    paste0("SOC.",a1," ",a2," ",a3, " ", a4,sprintf("%04d", sample(9999, n, TRUE)), sample(LETTERS, n, TRUE))
-  }
-  
-  myFun2 <- function(n = 1) {
-    a1 <- do.call(paste0, replicate(10, sample(LETTERS, n, TRUE), FALSE))
-    a2 <- do.call(paste0, replicate(7, sample(LETTERS, n, TRUE), FALSE))
-    a3 <- do.call(paste0, replicate(8, sample(LETTERS, n, TRUE), FALSE))
-    a4 <- do.call(paste0, replicate(9, sample(LETTERS, n, TRUE), FALSE))
-    paste0("PT.",a1," ",a2," ",a3, " ", a4,sprintf("%04d", sample(9999, n, TRUE)), sample(LETTERS, n, TRUE))
-  }
-  
- # SOC <- sort(rep(myFun(m), m)) 
-  
-#  PT <-  sort(myFun2(m*m))
-  
- # db <- data.frame(cbind(SOC,PT))
-  
-  
-   N <- m     # total SOC
+  require(stringi)
+
+  myFun <- function(free="SOC.",n=1) { 
     
-   x <-    myFun(N)
-   p <-    round(runif(N,2,J))   
-   SOC <- sort(rep(x, times=p)) 
-   PT <-  myFun2(length(SOC))
+    paste0(free,paste(stri_rand_strings(sample(2:5,1), 
+                                        sample(2:10, n, replace=TRUE)), 
+                      collapse= " "))
+  }
   
-   db <- data.frame(cbind(SOC,PT))
-  
+  N   <-  m
+  x   <-  replicate(N, myFun())
+  p   <-  round(runif(N,2,J))   
+  SOC <-  sort(rep(x, times=p)) 
+  PT  <-  replicate(length(SOC), myFun(free="PT."))
+  db  <-  data.frame(cbind(SOC,PT))
+
   
 ```
 
@@ -381,7 +365,48 @@ Simple AE table example using kable in Rmarkdown
   ) %>% add_header_above(c("Adverse events listing, primary system organ class and preferred term (Safety Analysis Set)" = 6) , bold = TRUE, font_size=15
     )  
   
-``` 
+```
+
+#  Try Hmisc
+
+This will straight out count SOCs, ignoring patient IDs, and multiple occurrences within patients!
+
+```{r, }   
+
+  addmargins(table(all$SOC, all$treatment))
+  
+  f <- summaryM(SOC ~ treatment,   data=all,overall=TRUE,  test=FALSE )
+  html(f)
+  #plot(f)
+  # 
+  # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  ###patients with aleast one...look at title only
+  # 
+  #  atleast <- all[all$tot.AE %in% 1,]
+  #  addmargins(table(atleast$treatment))
+  #  f <- summaryM(SOC ~ treatment, test=TRUE, data=atleast, overall=TRUE)
+  #  print(f)
+  #  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  
+  #  
+  #  uni <- unique(all[,c("SOC","PT","treatment")])
+  #  
+  #  # SOC headers
+  #  f <- summaryM(SOC ~ treatment, test=TRUE, data=atleast, overall=TRUE)
+  #  print(f)
+  #  
+  #  
+
+
+
+
+
+
+
+
+
+
+```
 # Computing Environment
 
 `r markupSpecs$html$session()`
