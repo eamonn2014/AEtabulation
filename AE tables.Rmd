@@ -96,6 +96,7 @@ Simple AE table example using kable in Rmarkdown
   }
   
   N   <-  m
+
   x   <-  replicate(N, myFun()) # create N SOC groups
   p   <-  round(runif(N,2,J))   # size of SOC groups
   SOC <-  sort(rep(x, times=p)) # fill out the SOCs
@@ -104,8 +105,7 @@ Simple AE table example using kable in Rmarkdown
   PT <-   str_to_sentence(PT)    # changes case so only first letter is uppercase
   PT <- gsub("Pt","PT",PT)       # change case back
   SOC <- gsub("Soc","SOC",SOC)   # change case back
-  db  <-  data.frame(cbind(SOC,PT))  # bind together, we now have the dictionary!
-  
+  db  <-  data.frame(cbind(SOC,PT))  # bind together, we now have the dictionary!   
   
 ```
 
