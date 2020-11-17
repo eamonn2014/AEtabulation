@@ -287,6 +287,8 @@ Simple AE table example using kable in Rmarkdown
 
 Except in the case of an SOC with one PT the sum of PTs may not necessarily equal the corresponding SOC. Investigate each SOC. One, within an SOC count how many patients have at least one of the particular SOC. Two, investigate all PTs within each SOC. Report how many patients have at least one. If the sum of PTs tally for an SOC, that means no patient has multiple PFs for that SOC.
 
+Note also the 'Number of patients with at least one adverse event' is not expected to match the sum of the SOC, as a patient is likely to have more than one SOC.
+
 
 ```{r, }      
    
