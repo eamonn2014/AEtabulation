@@ -1,6 +1,6 @@
 ---
 title: "AE reporting"
-author: "Eamonn O'Brien<br><small><br>Department of Insanity<br></small>"
+author: "Eamonn O'Brien<br><small><br>Biostatistics<br></small>"
 date: "`r Sys.Date()`"
 output:
   rmdformats::readthedown:
@@ -190,42 +190,65 @@ Simple AE table example using kable in Rmarkdown
 
 ```
 
-# Manage data for by System order class : Preferred terms
+# Manage data for by System order class : Preferred terms, the right way
 
-```{r, }  
-
-  fooz<-list()  # this will be used to collect data
-  # PTs within each SOC
-  s <- all[, c("id","SOC","PT","treatment")]
-  s <- unique(s)
-  s<-s[!(s$SOC=="" ),]
+```{r, eval=TRUE}  
+ 
   
-  k <- sort(unique(s$SOC))
-  L <- length(k)
-  for (i in 1:L) {
+  call <- all[!all$count.AE %in% 0,]  # dispense with all obs with no AEs
+  
+  s <- call[, c("id","SOC","PT","treatment")]  # drop count vars
+  
+  s <- unique(s)  # if within a patient has multiple SOC and linked PTs, 
+                  # keep only 1 occurrence as this extra info is not used
+  
+  # s<-s[!(s$SOC=="" ),]  # no need for this as 
+  
+  fooz<-list()                        # this will be used to collect data
+  
+  # analyse data in SOC chunks 
+
+  k <- sort(unique(s$SOC))       # get a vector of unique SOC
+  L <- length(k)                 # how many unique SOC 
+  
+  for (i in 1:L) {               # one by one analyze SOC groups
    
-    ss <- s[s$SOC %in% k[i],]
-    
-    ss1 <- addmargins(table(ss$PT, ss$treatment))
-    
+    ss <- s[s$SOC %in% k[i],]    # isolate a SOC chunk
+ 
+       # special case if only 1 SOC row
         if (nrow(ss) %in% 1) {
+          
+            ss1 <- addmargins(table(ss$PT, ss$treatment))
             Tot <- ss1[rownames(ss1) %in% "Sum",]
             body <- ss1[!rownames(ss1) %in% "Sum",]
             z <- rbind( Tot , body)
             rownames(z)[1] <- k[i]    
-            rownames(z)[2] <- paste0("  ",rownames(ss1)[1])    
-            fooz[[i]]<-z  
+            rownames(z)[2] <- paste0("  ",rownames(ss1)[1])   
+            
+            fooz[[i]] <- z  
             
         } else {
-    
-           # put SOC at top and indent PTs
-           Tot <- ss1[nrow(ss1),]
-           # select all rows except last
-           body <- ss1[ c(1:(nrow(ss1)-1)),]
+          
+          
+           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+           # This step ensure if same SOC occurs more than once in a patient count only once
+           sss <-unique(ss[,c("id","SOC","treatment")]) #  [1] drop PT
+           Tot <- addmargins(table(sss$treatment))      #  [2]
+          
+           # this would allow duplicates counted within patients, 
+           # not what is typically reported, code out [1], [2] and allow [3]
+           # Tot <- ss1[nrow(ss1),]                      # [3]
+           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+           
+           sss <- unique(ss[,c("id","PT","treatment")]) #  [1] drop SOC
+           ss1 <- addmargins(table(sss$PT, sss$treatment))
+           
+           body <- ss1[ c(1:(nrow(ss1)-1)),]   # select all rows except last
            z <- rbind( Tot , body)
-           rownames(z)[1] <- k[i]    
-           rownames(z)[2:nrow(z)] <- paste0("  ",rownames(z)[2:nrow(z)])   
-           fooz[[i]]<-z  
+           rownames(z)[1] <- k[i]    # add in SOC name
+           # next line would add indent PTs, we do this later
+           #rownames(z)[2:nrow(z)] <- paste0("  ",rownames(z)[2:nrow(z)])   
+           fooz[[i]] <- z     # collect info
         
         }
     
@@ -233,7 +256,77 @@ Simple AE table example using kable in Rmarkdown
                                     
        foo99 <- data.frame(tmp)  
   }
+  
+```
 
+#  Build AE table the wrong way
+
+```{r, eval=FALSE}    
+  
+  
+  call <- all[!all$count.AE %in% 0,]  # dispense with all obs with no AEs
+  
+  s <- call[, c("id","SOC","PT","treatment")]  # drop count vars
+  
+  s <- unique(s)  # if within a patient has multiple SOC and linked PTs, 
+                  # keep only 1 occurrence as this extra info is not used
+  
+  fooz<-list()                        # this will be used to collect data
+  
+  # analyse data in SOC chunks 
+
+  k <- sort(unique(s$SOC))       # get a vector of unique SOC
+  L <- length(k)                 # how many unique SOC 
+  
+  for (i in 1:L) {               # one by one analyze SOC groups
+   
+    ss <- s[s$SOC %in% k[i],]    # isolate a SOC chunk
+    ss1 <- addmargins(table(ss$PT, ss$treatment))
+       # special case if only 1 SOC row
+    
+        if (nrow(ss) %in% 1) {
+          
+           
+            Tot <- ss1[rownames(ss1) %in% "Sum",]
+            body <- ss1[!rownames(ss1) %in% "Sum",]
+            z <- rbind( Tot , body)
+            rownames(z)[1] <- k[i]    
+            rownames(z)[2] <- paste0("  ",rownames(ss1)[1])   
+            
+            fooz[[i]] <- z  
+            
+        } else {
+          
+          
+           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+           # This step ensure if same SOC occurs more than once in a patient count only once
+           #sss <-unique(ss[,c("id","SOC","treatment")]) #  [1] drop PT
+          # Tot <- addmargins(table(sss$treatment))      #  [2]
+          
+           # this would allow duplicates counted within patients, 
+           # not what is typically reported, code out [1], [2] and allow [3]
+           Tot <- ss1[nrow(ss1),]                      # [3]
+           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+           
+           sss <-  (ss[,c("id","PT","treatment")]) #  [1] drop SOC, note dropped unique
+           ss1 <- addmargins(table(sss$PT, sss$treatment))
+           
+           body <- ss1[ c(1:(nrow(ss1)-1)),]   # select all rows except last
+           z <- rbind( Tot , body)
+           rownames(z)[1] <- k[i]    # add in SOC name
+           # next line would add indent PTs, we do this later
+           #rownames(z)[2:nrow(z)] <- paste0("  ",rownames(z)[2:nrow(z)])   
+           fooz[[i]] <- z     # collect info
+        
+        }
+    
+       tmp <- do.call(rbind, fooz)      # bind the groups
+                                    
+       foo99 <- data.frame(tmp)  
+  }
+  
+  
+   
 ```
 
 #  Build AE table
@@ -259,6 +352,9 @@ Simple AE table example using kable in Rmarkdown
 
 #  Print AE table
 
+Except in the case of an SOC with one PT the sum of PTs may not necessarily equal the corresponding SOC. Investigate each SOC. One, within an SOC count how many patients have at least one of the particular SOC. Two, investigate all PTs within each SOC. Report how many patients have at least one. If the sum of PTs tally for an SOC, that means no patient has multiple PFs for that SOC.
+
+
 ```{r, }      
    
    pt <- grepl( "PT." ,  rownames(foo) ) # indent this term 
@@ -269,11 +365,12 @@ Simple AE table example using kable in Rmarkdown
  
     # footnotes
     t1<- "- Adverse events are defined as new or worsening events that occur on or after the first study day of study treatment"
-    t2<-"- A patient with multiple adverse events within a primary system organ class is counted only once"
-    t3<-"- System organ classes are presented in alphabetical order"
-    t4<-"- Preferred terms are sorted within system organ class in alphabetical order"
-    t5<-"- MedDRA version XY.Z has been used for reporting of adverse events"
-    t6<-"- Study ABCMADEUPEFG; Database lock: 10Nov2020"
+    t2<-"- A patient with multiple adverse events within a primary system organ class is counted only once for that system organ class"
+    t3<-"- A patient with multiple adverse events within a preferred term is counted only once for that preferred term"
+    t4<-"- System organ classes are presented in alphabetical order"
+    t5<-"- Preferred terms are sorted within system organ class in alphabetical order"
+    t6<-"- MedDRA version XY.Z has been used for reporting of adverse events"
+    t7<-"- Study ABCMADEUPEFG; Database lock: 10Nov2020"
 
    
     tab_1 <-  kable(d ,
@@ -291,7 +388,7 @@ Simple AE table example using kable in Rmarkdown
   ) %>% row_spec(0, font_size=14
   ) %>% add_header_above(c("Adverse events, by primary system organ class and preferred term (Safety Analysis Set)" = 7) , bold = TRUE, font_size=15
     ) %>% footnote(
-    general = c(t1,t2,t3,t4,t5,t6),
+    general = c(t1,t2,t3,t4,t5,t6,t7),
     general_title = " ",
     footnote_as_chunk = F ,
     escape = F
