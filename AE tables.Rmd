@@ -589,7 +589,7 @@ This will match the SOC simple tabulation further below. It may coincidentally m
   
 ```
 
-#  The data again removing no AE patients and sorting
+#  The data again removing no AE patients and sorted
 
 ```{r, }     
    
@@ -632,7 +632,7 @@ This will match the SOC simple tabulation further below. It may coincidentally m
   
 ```
 
-# Use datatable package for better interactivity
+# Use datatable package for listing with better interactivity
 
 ```{r,}
 
