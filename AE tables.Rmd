@@ -38,6 +38,7 @@ body {
 #https://stackoverflow.com/questions/60176526/kableextra-change-font-size-of-table-footnote
 #https://towardsdatascience.com/create-a-word-cloud-with-r-bde3e7422e8a
 #https://www.phusewiki.org/wiki/index.php?title=How_to_Count_Adverse_Events
+#https://community.rstudio.com/t/dplyr-arrange-for-natural-sorting-of-several-columns/50028/2
  
 ```
 
@@ -223,14 +224,17 @@ Simple AE table example using kable in Rmarkdown
  # s <- unique(s)  # if within a patient has multiple SOC and linked PTs, 
                   # keep only 1 occurrence as this extra info is not used
                   # this will not make a difference as I deal with this in the following code
-  
+  #s <- s[ gtools::mixedsort(s$SOC), ]  # sort alphanumeric   all3 <- all3[gtools::mixedorder(all3$PT), ]
+ 
   # s<-s[!(s$SOC=="" ),]  # no need for this as 
+  #s <- s[gtools::mixedorder(s$SOC), ]  # sort before manipulation
   
   fooz<-list()                        # this will be used to collect data
   
   # analyse data in SOC chunks 
 
   k <- sort(unique(s$SOC))       # get a vector of unique SOC
+  k <- gtools::mixedsort(unique(s$SOC)) 
   L <- length(k)                 # how many unique SOC 
   
   for (i in 1:L) {               # one by one analyze SOC groups
@@ -383,7 +387,8 @@ This will match the SOC simple tabulation further below. It may coincidentally m
   
   # analyse data in SOC chunks 
 
-  k <- sort(unique(s$SOC))       # get a vector of unique SOC
+ # k <- sort(unique(s$SOC))       # get a vector of unique SOC
+  k <- gtools::mixedsort(unique(s$SOC)) 
   L <- length(k)                 # how many unique SOC 
   
   for (i in 1:L) {               # one by one analyze SOC groups
@@ -601,6 +606,8 @@ This will match the SOC simple tabulation further below. It may coincidentally m
 #  The data again removing no AE patients and sorted
 
 ```{r, }     
+
+ require(gtools)
    
   all2 <- all[!all$tot.AE %in% 0,] #  remove patients with no AE
 
@@ -620,8 +627,10 @@ This will match the SOC simple tabulation further below. It may coincidentally m
   
   all2$duplicate.pt.flag<-all2$duplicate.pt.flag*1
   
-   all2 <- all2[gtools::mixedorder(all2$SOC), ]
+  # all2 <- all2[c(mixedorder(all2$SOC), mixedorder(all2$PT)),]
 
+    all2 <- all2[mixedorder(all2$SOC),]
+   
   kable(all2 ,
     format = "html", 
     col.names = c("Patient ID", "Total AE", "AE count" , "System Organ Class", "Preferred Term", "Treatment", "SOC dup?","PT dup?") ,
@@ -647,8 +656,7 @@ This will match the SOC simple tabulation further below. It may coincidentally m
 
 ```{r,}
 
-
-DT::datatable(all2, rownames=FALSE)
+ DT::datatable(all2, rownames=FALSE)
   
 ```
 
