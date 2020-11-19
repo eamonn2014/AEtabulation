@@ -266,10 +266,14 @@ Simple AE table example using kable in Rmarkdown
            ss1 <- addmargins(table(sss$PT, sss$treatment))
            
            body <- ss1[ c(1:(nrow(ss1)-1)),]   # select all rows except last
+           body <- body[ gtools::mixedsort(row.names(body)), ]  # sort alphanumeric
            z <- rbind( Tot , body)
+          
+           
            rownames(z)[1] <- k[i]    # add in SOC name
            # next line would add indent PTs, we do this later
            #rownames(z)[2:nrow(z)] <- paste0("  ",rownames(z)[2:nrow(z)])   
+           
            fooz[[i]] <- z     # collect info
         
         }
@@ -416,6 +420,8 @@ This will match the SOC simple tabulation further below. It may coincidentally m
            ss1 <- addmargins(table(sss$PT, sss$treatment))
            
            body <- ss1[ c(1:(nrow(ss1)-1)),]   # select all rows except last
+           body <- body[ gtools::mixedsort(row.names(body)), ]  # sort alphanumeric
+
            z <- rbind( Tot , body)
            rownames(z)[1] <- k[i]    # add in SOC name
            # next line would add indent PTs, we do this later
@@ -572,6 +578,7 @@ This will match the SOC simple tabulation further below. It may coincidentally m
   chk <- all3[, c("id","PT")]
   # ids of duplication
   ids <- all3[which(duplicated(chk)),]$id
+  all3 <- all3[gtools::mixedorder(all3$PT), ]
   all3[all3$id %in% ids,]
 
 ```
@@ -584,7 +591,9 @@ This will match the SOC simple tabulation further below. It may coincidentally m
  
   chk <- all3[, c("id","SOC")]
   # ids of duplication
-  ids <- all3[which(duplicated(chk)),]$id
+  ids <- all3[which(duplicated(chk)),]$id 
+  all3 <- all3[gtools::mixedorder(all3$SOC), ]
+  
   all3[all3$id %in% ids,]
   
 ```
@@ -610,6 +619,8 @@ This will match the SOC simple tabulation further below. It may coincidentally m
   mutate(duplicate.pt.flag = n() > 1)
   
   all2$duplicate.pt.flag<-all2$duplicate.pt.flag*1
+  
+   all2 <- all2[gtools::mixedorder(all2$SOC), ]
 
   kable(all2 ,
     format = "html", 
@@ -635,6 +646,7 @@ This will match the SOC simple tabulation further below. It may coincidentally m
 # Use datatable package for listing with better interactivity
 
 ```{r,}
+
 
 DT::datatable(all2, rownames=FALSE)
   
