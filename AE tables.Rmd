@@ -573,33 +573,69 @@ This will match the SOC simple tabulation further below. It may coincidentally m
 
 ```
 
-#  Are there duplicates of PT within patient?
+#  Are there duplicates of SOC within patient?
 
 ```{r, }   
    
   # duplicate PT within a person
-  all2 <- all[!all$tot.AE %in% 0,] # remove patients with no AE
-  all3 <- arrange(all2, SOC, treatment , id)
-  chk <- all3[, c("id","PT")]
-  # ids of duplication
-  ids <- all3[which(duplicated(chk)),]$id
-  all3 <- all3[gtools::mixedorder(all3$PT), ]
-  all3[all3$id %in% ids,]
+  # all2 <- all[!all$tot.AE %in% 0,] # remove patients with no AE
+  # all3 <- arrange(all2, SOC, treatment , id)
+  # chk <- all3[, c("id","PT")]
+  # # ids of duplication
+  # ids <- all3[which(duplicated(chk)),]$id
+  # all3 <- all3[gtools::mixedorder(all3$PT), ]
+  # all3[all3$id %in% ids,]
+  
+  require(gtools)
+   
+  all2 <- all[!all$tot.AE %in% 0,] #  remove patients with no AE
+
+  all2 <- arrange(all2, SOC, PT,id, treatment)
+  
+  # https://community.rstudio.com/t/filter-out-all-rows-with-duplicate-values/41043/4
+  # flag duplicates
+  all2 = all2 %>% 
+  group_by(id, SOC) %>% 
+  mutate(duplicate.soc.flag = n() > 1)
+  
+  all2$duplicate.soc.flag<-all2$duplicate.soc.flag*1
+  
+  all2 = all2 %>% 
+  group_by(id, PT) %>% 
+  mutate(duplicate.pt.flag = n() > 1)
+  
+  all2$duplicate.pt.flag<-all2$duplicate.pt.flag*1
+  
+  all2 <- all2[mixedorder(all2$SOC),]
+  
+  all2[all2$duplicate.soc.flag %in%  1,]
+  
+  
 
 ```
 
-#  Are there duplicates of SOC within patient?
+#  Are there duplicates of PT within patient?
 
 ```{r, }     
   
   # duplicated SOC within a person
- 
-  chk <- all3[, c("id","SOC")]
-  # ids of duplication
-  ids <- all3[which(duplicated(chk)),]$id 
-  all3 <- all3[gtools::mixedorder(all3$SOC), ]
+  # 
+  # chk <- all3[, c("id","SOC")]
+  # # ids of duplication
+  # ids <- all3[which(duplicated(chk)),]$id 
+  # all3 <- all3[gtools::mixedorder(all3$SOC), ]
+  # 
+  # all3[all3$id %in% ids,]
+  all2[all2$duplicate.pt.flag %in%  1,]
   
-  all3[all3$id %in% ids,]
+
+```
+
+# Use datatable package for listing with better interactivity
+
+```{r,}
+
+ DT::datatable(all2, rownames=FALSE)
   
 ```
 
@@ -649,14 +685,6 @@ This will match the SOC simple tabulation further below. It may coincidentally m
     ) 
   
   
-  
-```
-
-# Use datatable package for listing with better interactivity
-
-```{r,}
-
- DT::datatable(all2, rownames=FALSE)
   
 ```
 
