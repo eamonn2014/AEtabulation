@@ -634,6 +634,8 @@ This will match the SOC simple tabulation further below. It may coincidentally m
 
 # Use datatable package for listing with better interactivity
 
+Show more entries and sort the flags to see duplication within patients
+
 ```{r,}
 
  DT::datatable(all2, rownames=FALSE,
