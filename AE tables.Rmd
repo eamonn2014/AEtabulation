@@ -337,6 +337,7 @@ Ways of saying the same thing: 'Patients with more than one occurrence of a pref
     t1<- "- Adverse events are defined as new or worsening events that occur on or after the first study day of study treatment"
     t2<-"- A patient with multiple adverse events within a primary system organ class is counted only once for that system organ class"
     t3<-"- A patient with multiple adverse events within a preferred term is counted only once for that preferred term"
+    t3a<-"- A patient with multiple occurrences of an AE is counted only once in the AE category"
     t4<-"- System organ classes are presented in alphabetical order"
     t5<-"- Preferred terms are sorted within system organ class in alphabetical order"
     t6<-"- MedDRA version XY.Z has been used for reporting of adverse events"
@@ -358,7 +359,7 @@ Ways of saying the same thing: 'Patients with more than one occurrence of a pref
   ) %>% row_spec(0, font_size=14
   ) %>% add_header_above(c("Adverse events, by primary system organ class and preferred term (Safety Analysis Set)" = 7) , bold = TRUE, font_size=15
     ) %>% footnote(
-    general = c(t1,t2,t3,t4,t5,t6,t7),
+    general = c(t1, t3a,t4,t5,t6,t7),
     general_title = " ",
     footnote_as_chunk = F ,
     escape = F
@@ -465,13 +466,13 @@ This will match the SOC simple tabulation further below. It may coincidentally m
    rownames(d) <- NULL
  
     # footnotes
-    t1<- "- Adverse events are defined as new or worsening events that occur on or after the first study day of study treatment"
-    t2<-"- A patient with multiple adverse events within a primary system organ class is counted only once for that system organ class"
-    t3<-"- A patient with multiple adverse events within a preferred term is counted only once for that preferred term"
-    t4<-"- System organ classes are presented in alphabetical order"
-    t5<-"- Preferred terms are sorted within system organ class in alphabetical order"
-    t6<-"- MedDRA version XY.Z has been used for reporting of adverse events"
-    t7<-"- Study ABCMADEUPEFG; Database lock: 10Nov2020"
+    # t1<- "- Adverse events are defined as new or worsening events that occur on or after the first study day of study treatment"
+    # t2<-"- A patient with multiple adverse events within a primary system organ class is counted only once for that system organ class"
+    # t3<-"- A patient with multiple adverse events within a preferred term is counted only once for that preferred term"
+    # t4<-"- System organ classes are presented in alphabetical order"
+    # t5<-"- Preferred terms are sorted within system organ class in alphabetical order"
+    # t6<-"- MedDRA version XY.Z has been used for reporting of adverse events"
+    # t7<-"- Study ABCMADEUPEFG; Database lock: 10Nov2020"
 
    
     tab_1 <-  kable(d ,
@@ -489,7 +490,7 @@ This will match the SOC simple tabulation further below. It may coincidentally m
   ) %>% row_spec(0, font_size=14
   ) %>% add_header_above(c("Adverse events, by primary system organ class and preferred term (Safety Analysis Set)" = 7) , bold = TRUE, font_size=15
     ) %>% footnote(
-    general = c(t1,t2,t3,t4,t5,t6,t7),
+    general = c(t1,t2,t3a,t5,t6,t7),
     general_title = " ",
     footnote_as_chunk = F ,
     escape = F
@@ -635,8 +636,21 @@ This will match the SOC simple tabulation further below. It may coincidentally m
 
 ```{r,}
 
- DT::datatable(all2, rownames=FALSE)
+ DT::datatable(all2, rownames=FALSE,
+               plugins = 'natural',
+               options = list(
+ # dom = 't',
+  columnDefs = list(list(type = 'natural', targets = c(4,5)))
+))
   
+#DT::datatable(all2, rownames=FALSE)
+
+# datatable(d, plugins = 'natural', options = list(
+#   dom = 't',
+#   columnDefs = list(list(type = 'natural', targets = 6))
+# ))
+
+
 ```
 
 #  The data again removing no AE patients and sorted
@@ -706,8 +720,10 @@ This will straight out count SOCs, ignoring patient IDs and therefore multiple o
 
 ```{r, }     
   
-  addmargins(table(all$SOC, all$treatment))
+  f <- addmargins(table(all$SOC, all$treatment))
     
+ #  f <- f[ gtools::mixedsort(row.names(f)), ]  
+f
   # 
   # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   #  ###patients with aleast one...look at title only
@@ -918,13 +934,11 @@ This will straight out count SOCs, ignoring patient IDs and therefore multiple o
             colors=brewer.pal(8, "Dark2"))
 
 #  wordcloud2(data=df, size=1.6, color='random-dark')
-
-
-```  
-  
+ 
   
      
 ```
+
 # Computing Environment
 
 `r markupSpecs$html$session()`
