@@ -14,10 +14,8 @@
 
   # format function 
   formatz <- function(x){
-    #if (!is.na(x)  ) {
-      sprintf(x, fmt = '%#.1f')  
-   # }
-  }
+       sprintf(x, fmt = '%#.1f')  
+   }
 
 
 ui <- dashboardPage(
@@ -28,6 +26,9 @@ ui <- dashboardPage(
                                tags$head(
                                  tags$style(HTML('#resample{background-color:palegreen}'))
                                ),
+                               
+                               
+                               
                                
                                actionButton("resample"," Hit to sample another data set", icon = icon("th"),  width =250  ),
                                
@@ -55,45 +56,84 @@ ui <- dashboardPage(
                                #~~~~~~~~~~~~~
                                menuItem("Supporting outputs",  startExpanded = FALSE,
                                         menuSubItem("Dynamic listing", tabName = "RESULTS"),
-                                        menuSubItem("testing" ,    tabName = "RESULTS2"),
+                                        menuSubItem("testing" ,        tabName = "RESULTS2"),
                                         menuSubItem("SOC WORD CLOUD",  tabName = "RESULTS3"),
                                         menuSubItem("PF WORD CLOUD" ,  tabName = "RESULTS4")
                                ), 
                               
-                               
-                   
-                   #~~~~~~~~~~~~~
-                   menuItem("Grab the code", icon = icon("bar-chart-o"),
-
-                            menuSubItem("Shiny",
-                                        icon = icon("send",lib='glyphicon'),
-                                        href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/dashboard1/app.R"),
-
-                            menuSubItem("R",
-                                        icon = icon("send",lib='glyphicon'),
-                                        href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/Rcode.R") ,
-
-                            menuSubItem("Click for bells and whistles main app.",
-                                        icon = icon("send",lib='glyphicon'),
-                                        href = "https://eamonn3.shinyapps.io/LoQs/")
-                   ),
-                   
-                   menuItem("Help", tabName = "HELP")
-                   )
-                   
-                   #~~~~~~~~~~~~~
-                   #~~~~~~~~~~~~~
-                  
-                   #~~~~~~~~~~~~~
-                   
+                               #~~~~~~~~~~~~~
+                               menuItem("Grab the code", icon = icon("bar-chart-o"),
+            
+                                        menuSubItem("Shiny",
+                                                    icon = icon("send",lib='glyphicon'),
+                                                    href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/dashboard1/app.R"),
+            
+                                        menuSubItem("R",
+                                                    icon = icon("send",lib='glyphicon'),
+                                                    href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/Rcode.R") ,
+            
+                                        menuSubItem("Click for bells and whistles main app.",
+                                                    icon = icon("send",lib='glyphicon'),
+                                                    href = "https://eamonn3.shinyapps.io/LoQs/")
+                               ),
+                               #~~~~~~~~~~~~~
+                               menuItem("Wiki", tabName = "HELP")
+                               )
+                               #~~~~~~~~~~~~~
                    
   ),
   dashboardBody(
+    
+    fluidRow(
+      infoBox(
+        "Adverse Event", "Presentation", icon = icon("line-chart"),
+        width = 4
+      ),
+      infoBox(
+        "Listing", "More dynamic listing", icon = icon("user-friends"),
+        width = 4
+      ),
+      infoBox(
+        "Wordcloud", "Informal yet insightful visualisation", icon = icon("book-open"),
+        width = 4
+      )),
+    
+    
+    # fluidRow(
+    #   column(align = "center",
+    #          "A Medium article demonstration",
+    #          width = 4
+    #   ),
+    #   column(
+    #     align = "center",
+    #     "Everyone!",
+    #     width = 4
+    #   ),
+    #   column(
+    #     align = "center",
+    #     "To read more visit: ",
+    #     width = 4
+    #   )),
+     
+    
+    
+    
+    
     tabItems(
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      tabItem("OVERVIEW", 
-              box(" ", 
-                  htmlOutput("tableset") )
+      tabItem("OVERVIEW",   
+              column(
+                width = 12,
+              box(" " ,
+                  htmlOutput("tableset") 
+                  ,status = "primary"
+                  ,solidHeader = FALSE 
+                  ,collapsible = TRUE 
+                  
+                  )
+              
+              
+              )
       ),
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       tabItem("RESULTS", 
@@ -110,18 +150,18 @@ ui <- dashboardPage(
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       tabItem("RESULTS3", 
               box(" ", 
-                  plotOutput("SOC")
+                  plotOutput("SOC", height = "500px")
               )
       ),
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       tabItem("RESULTS4", 
               box(" ", 
-                  plotOutput("PF")
+                  plotOutput("PF", height = "500px")
               )
       ),
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       tabItem("HELP", 
-              box("HELP box", 
+              box("", 
                   textOutput("help"))
       ) 
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -130,49 +170,10 @@ ui <- dashboardPage(
   
 )
 
-
-
-
-
-
-
-
-
-
+ 
 
 server <- function(input, output, session) {
   
-  
-  data <- reactive({
-    
-    print(input$SideBarMENU)
-    
-    if(input$SideBarMENU %in% names(iris)){
-      iris[[input$SideBarMENU]]
-    } else {
-      rnorm(100, 1000, 10)
-    }
-  })
-  
-  
-  output$results <- renderPlot({
-    hist(data())
-  })
-  
-  
-  # output$overview <- renderTable({ ###############################
-  #     head(AE2)
-  # })
-  
-  
-  
-  output$help <- renderText({
-    HTML("A wiki is a website on which users collaboratively.....")
-  })
-  
-  
-  ###
-  ###CODE
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # This is where a new sample is instigated and inputs converted to numeric
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -182,7 +183,7 @@ server <- function(input, output, session) {
     
     m <- as.numeric(input$m)
     
-    n <-as.numeric(input$n)
+    n <- as.numeric(input$n)
     
     rate <- as.numeric(input$rate)
     
@@ -312,17 +313,13 @@ server <- function(input, output, session) {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   dat3 <- reactive({
     
-    # sample <- random.sample()
-  
     all=dat2()$all
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Calculate N
-    
     N <- unique(all[, c("id", "treatment")])
     N0 <- addmargins(table(N$treatment))
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Calculate the number of patients with at least one AE
-    
     N <- unique(all[, c("id", "tot.AE","treatment")])
     atleast <- N[!N$tot.AE %in% 0,]
     N1 <- addmargins(table(atleast$treatment))
@@ -336,9 +333,7 @@ server <- function(input, output, session) {
   # MANAGE THE DATA SOC PT
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   dat4 <- reactive({
-    
-    # sample <- random.sample()
-    
+     
     db=dat()$db
     all=dat2()$all
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -524,9 +519,8 @@ server <- function(input, output, session) {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   
   CLOUD.SOC<- reactive({
-     
- #   db=dat()$db
-    all=dat2()$all
+ 
+  all=dat2()$all
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Manage data for by System order class : Preferred terms, the right way
     
@@ -696,10 +690,13 @@ server <- function(input, output, session) {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   #  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
+  output$help <- renderText({
+    HTML("A wiki is a website on which users collaboratively.....")
+  })
   
   
    
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##TESTING AND TROUBLESHOOTING
   # JUST A TEST output
   # output$AE2 <- renderTable({
   #   dat5()$foo
