@@ -51,7 +51,7 @@ ui <- dashboardPage(
 
                                ),
                                #~~~~~~~~~~~~~
-                               menuItem("AE Table", tabName = "OVERVIEW", selected = TRUE),
+                               menuItem("Resulting AE Table", tabName = "OVERVIEW", selected = TRUE),
                                #~~~~~~~~~~~~~
                                menuItem("Supporting outputs",  startExpanded = FALSE,
                                         menuSubItem("Dynamic listing", tabName = "RESULTS"),
@@ -59,69 +59,72 @@ ui <- dashboardPage(
                                         menuSubItem("SOC WORD CLOUD",  tabName = "RESULTS3"),
                                         menuSubItem("PF WORD CLOUD" ,  tabName = "RESULTS4")
                                ), 
-                               #~~~~~~~~~~~~~
-                               menuItem("Help", tabName = "HELP")
-                               #~~~~~~~~~~~~~
+                              
+                               
+                   
+                   #~~~~~~~~~~~~~
+                   menuItem("Grab the code", icon = icon("bar-chart-o"),
 
+                            menuSubItem("Shiny",
+                                        icon = icon("send",lib='glyphicon'),
+                                        href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/dashboard1/app.R"),
+
+                            menuSubItem("R",
+                                        icon = icon("send",lib='glyphicon'),
+                                        href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/Rcode.R") ,
+
+                            menuSubItem("Click for bells and whistles main app.",
+                                        icon = icon("send",lib='glyphicon'),
+                                        href = "https://eamonn3.shinyapps.io/LoQs/")
                    ),
                    
-                   #~~~~~~~~~~~~~
-                   menuItem("Code", icon = icon("bar-chart-o"),
-                            
-                            menuSubItem("Shiny",  
-                                        icon = icon("send",lib='glyphicon'), 
-                                        href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/dashboard1/app.R"),
-                            
-                            menuSubItem("R",  
-                                        icon = icon("send",lib='glyphicon'), 
-                                        href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/Rcode.R") ,
-                            
-                            menuSubItem("Click for bells and whistles main app.",  
-                                        icon = icon("send",lib='glyphicon'), 
-                                        href = "https://eamonn3.shinyapps.io/LoQs/")
+                   menuItem("Help", tabName = "HELP")
                    )
-                   #~~~~~~~~~~~~~
                    
+                   #~~~~~~~~~~~~~
+                   #~~~~~~~~~~~~~
+                  
+                   #~~~~~~~~~~~~~
                    
                    
   ),
   dashboardBody(
     tabItems(
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       tabItem("OVERVIEW", 
               box(" ", 
                   htmlOutput("tableset") )
       ),
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       tabItem("RESULTS", 
               box(" ", 
                   DT::dataTableOutput("mytable")
-                  #plotOutput("results")
-              )
+               )
       ),
-      
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       tabItem("RESULTS2", 
               box("Results box", 
                   htmlOutput("AE2")
-                  #plotOutput("results")
-              )
+               )
       ),
-      
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       tabItem("RESULTS3", 
               box(" ", 
                   plotOutput("SOC")
               )
       ),
-      
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       tabItem("RESULTS4", 
               box(" ", 
                   plotOutput("PF")
               )
       ),
-      
-      
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       tabItem("HELP", 
               box("HELP box", 
                   textOutput("help"))
       ) 
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     )
   )
   
