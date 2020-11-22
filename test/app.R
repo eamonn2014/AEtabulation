@@ -67,11 +67,11 @@
             
                                         menuSubItem("R",
                                                     icon = icon("send",lib='glyphicon'),
-                                                    href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/Rcode.R") ,
+                                                    href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/Rcode.R") #,
             
-                                        menuSubItem("Click for bells and whistles main app.",
-                                                    icon = icon("send",lib='glyphicon'),
-                                                    href = "https://eamonn3.shinyapps.io/LoQs/")
+                                        # menuSubItem("Click for bells and whistles main app.",
+                                        #             icon = icon("send",lib='glyphicon'),
+                                        #             href = "https://eamonn3.shinyapps.io/LoQs/")
                                ),
                                #~~~~~~~~~~~~~
                                menuItem("Wiki", tabName = "HELP")
@@ -88,7 +88,7 @@
     
     fluidRow(
       infoBox(
-        "Adverse Event", "Presentation", icon = icon("line-chart"),
+        "Adverse Event", "Tabultation", icon = icon("line-chart"),
         width = 4
       ),
       infoBox(
