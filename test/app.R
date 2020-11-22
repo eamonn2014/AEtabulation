@@ -49,7 +49,7 @@
 
                                ),
                                #~~~~~~~~~~~~~
-                               menuItem("Resulting AE Table", tabName = "OVERVIEW", selected = TRUE),
+                               menuItem("Landing page: AE Table & Listing", tabName = "OVERVIEW", selected = TRUE),
                                #~~~~~~~~~~~~~
                                menuItem("Supporting outputs",  startExpanded = FALSE,
                                         menuSubItem("Dynamic listing", tabName = "RESULTS"),
