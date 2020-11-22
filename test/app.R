@@ -1,3 +1,4 @@
+# experimerntal AE app dashboard
 library(shiny)
 library(shinydashboard)
 library(rms)          # automatically engages rms(Hmisc)
@@ -55,42 +56,48 @@ ui <- dashboardPage(
                         ),
                     
                     
-                   
-                   menuItem("Code & link to explanation", icon = icon("bar-chart-o"),
-                            menuSubItem("Shiny",  
-                                        icon = icon("send",lib='glyphicon'), 
-                                        href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/dashboard1/app.R"),
-                            
-                            
-                            menuSubItem("R",  
-                                        icon = icon("send",lib='glyphicon'), 
-                                        href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/Rcode.R") ,
-                            
-                            
-                            
-                            menuSubItem("Click for bells and whistles main app.",  
-                                        icon = icon("send",lib='glyphicon'), 
-                                        href = "https://eamonn3.shinyapps.io/LoQs/")
-                            
-                   ),
+                 
                     
-                    menuItem("Overview", tabName = "OVERVIEW", selected = TRUE),
+                    menuItem("AE Table", tabName = "OVERVIEW", selected = TRUE),
                     
-                    menuItem("Results",  startExpanded = TRUE,
-                             menuSubItem("Sepal.Length", tabName = "RESULTS"),
+                    menuItem("Results",  startExpanded = FALSE,
+                             menuSubItem("Dynamic listing", tabName = "RESULTS"),
                              menuSubItem("Sepal.Width" , tabName = "RESULTS"),
                              menuSubItem("Petal.Length", tabName = "RESULTS"),
                              menuSubItem("Petal.Width" , tabName = "RESULTS")
                     ), 
                     menuItem("Help", tabName = "HELP")
+                   
+                   
+                   
+        ),
+        
+        menuItem("Code", icon = icon("bar-chart-o"),
+                 menuSubItem("Shiny",  
+                             icon = icon("send",lib='glyphicon'), 
+                             href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/dashboard1/app.R"),
+                 
+                 
+                 menuSubItem("R",  
+                             icon = icon("send",lib='glyphicon'), 
+                             href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/Rcode.R") ,
+                 
+                 
+                 
+                 menuSubItem("Click for bells and whistles main app.",  
+                             icon = icon("send",lib='glyphicon'), 
+                             href = "https://eamonn3.shinyapps.io/LoQs/")
+                 
         )
+        
+        
+      
         
     ),
     dashboardBody(
         tabItems(
             tabItem("OVERVIEW", 
                     box(" ", 
-                     #   tableOutput("AE2")) ###################################
                     htmlOutput("tableset") )
             ),
             tabItem("RESULTS", 
