@@ -15,11 +15,12 @@
   # format function 
   formatz <- function(x){
        sprintf(x, fmt = '%#.1f')  
-   }
+  }
+   
 
-
-ui <- dashboardPage(
-  dashboardHeader(), 
+  ui <- dashboardPage( 
+                      
+  dashboardHeader(title = "Adverse Events"), 
   dashboardSidebar(width=300,
                    sidebarMenu(id = "SideBarMENU", 
                                
@@ -99,24 +100,7 @@ ui <- dashboardPage(
         width = 4
       )),
     
-    
-    # fluidRow(
-    #   column(align = "center",
-    #          "A Medium article demonstration",
-    #          width = 4
-    #   ),
-    #   column(
-    #     align = "center",
-    #     "Everyone!",
-    #     width = 4
-    #   ),
-    #   column(
-    #     align = "center",
-    #     "To read more visit: ",
-    #     width = 4
-    #   )),
      
-    
     
     
     
@@ -144,11 +128,7 @@ ui <- dashboardPage(
       ),
       
       
-      
-      
-      
-      
-      
+     
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       
       # tabItem("OVERVIEW",   
@@ -721,7 +701,7 @@ server <- function(input, output, session) {
   #  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   output$help <- renderText({
-    HTML("A wiki is a website on which users collaboratively.....")
+    HTML("Adverse event presentation may be confusing if you do not have experience seeing such a presentation before.")
   })
   
   
