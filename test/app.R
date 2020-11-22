@@ -518,6 +518,9 @@ server <- function(input, output, session) {
     
     DT::datatable(all2, rownames=FALSE,
                   plugins = 'natural',
+                  colnames=c('Patient ID' = 'id', 'Total AEs per patient' = 'tot.AE', 'Count of AEs per patient'='count.AE',
+                             'Treatment'='treatment','Duplicate SOC?'= 'duplicate.soc.flag',
+                             'Duplicate PT?'='duplicate.pt.flag'),
                   options = list(
                     # dom = 't',
                     columnDefs = list(list(type = 'natural', targets = c(4,5)))
