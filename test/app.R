@@ -23,14 +23,10 @@ ui <- dashboardPage(
   dashboardSidebar(width=300,
                    sidebarMenu(id = "SideBarMENU", 
                                
-                               tags$head(
-                                 tags$style(HTML('#resample{background-color:palegreen}'))
-                               ),
+                              
                                
                                
-                               
-                               
-                               actionButton("resample"," Hit to sample another data set", icon = icon("th"),  width =250  ),
+                             
                                
                                #~~~~~~~~~~~~~
                                menuItem("Define parameters ", icon = icon("bar-chart-o"),
@@ -78,8 +74,13 @@ ui <- dashboardPage(
                                ),
                                #~~~~~~~~~~~~~
                                menuItem("Wiki", tabName = "HELP")
-                               )
+                               ),
                                #~~~~~~~~~~~~~
+                   tags$head(
+                     tags$style(HTML('#resample{background-color:palegreen}'))
+                   ),
+                   
+                   actionButton("resample"," Hit to sample another data set", icon = icon("th"),  width =250  )
                    
   ),
   dashboardBody(
@@ -120,21 +121,50 @@ ui <- dashboardPage(
     
     
     tabItems(
-      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      tabItem("OVERVIEW",   
-              column(
-                width = 12,
-              box(" " ,
-                  htmlOutput("tableset") 
-                  ,status = "primary"
-                  ,solidHeader = FALSE 
-                  ,collapsible = TRUE 
-                  
-                  )
-              
-              
-              )
+      
+      
+        tabItem("OVERVIEW",
+      fluidRow(        
+        box(
+          title = "Table"
+          ,status = "primary"
+          ,solidHeader = TRUE 
+          ,collapsible = TRUE 
+          , htmlOutput("tableset") 
+        )
+        
+        ,box(
+          title = "Dynamic listing, patients with at least one AE"
+          ,status = "primary"
+          ,solidHeader = TRUE 
+          ,collapsible = TRUE 
+          ,DT::dataTableOutput("mytable2")
+        ) 
+        )
       ),
+      
+      
+      
+      
+      
+      
+      
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      
+      # tabItem("OVERVIEW",   
+      #         column(
+      #           width = 12,
+      #         box(" " ,
+      #             htmlOutput("tableset") 
+      #             ,status = "primary"
+      #             ,solidHeader = FALSE 
+      #             ,collapsible = TRUE 
+      #             
+      #             )
+      #         
+      #         
+      #         )
+      # ),
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       tabItem("RESULTS", 
               box(" ", 
@@ -477,7 +507,7 @@ server <- function(input, output, session) {
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
    # LISTING USING DATATABLE
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
-  output$mytable = DT::renderDataTable({
+   output$mytable2 <- output$mytable <- DT::renderDataTable({
     
     require(gtools)
     
@@ -698,9 +728,9 @@ server <- function(input, output, session) {
    
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##TESTING AND TROUBLESHOOTING
   # JUST A TEST output
-  # output$AE2 <- renderTable({
-  #   dat5()$foo
-  # }, rownames = TRUE, colnames = TRUE)
+  output$AE3 <- renderTable({
+    dat5()$foo
+  }, rownames = TRUE, colnames = TRUE)
   
   output$AE2 <- renderTable({
     CLOUD.SOC()$foo99s
