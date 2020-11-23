@@ -24,11 +24,7 @@
   dashboardSidebar(width=300,
                    sidebarMenu(id = "SideBarMENU", 
                                
-                              
-                               
-                               
-                             
-                               
+                 
                                #~~~~~~~~~~~~~
                                menuItem("Define parameters ", icon = icon("bar-chart-o"),
                                         
@@ -160,7 +156,7 @@
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       tabItem("RESULTS3", 
               box(" ", 
-                  plotOutput("SOC", height = "500px")
+                  plotOutput("SOC", height = "500px") #, width  ="800px")
               )
       ),
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -354,12 +350,12 @@ server <- function(input, output, session) {
     s <- callx[, c("id","SOC","PT","treatment")]  # drop count vars
     
     fooz<-list()                        # this will be used to collect data
-    # 
-    # analyse data in SOC chunks
+    
+    # analyse data in SOC chunks 
     
     k <- sort(unique(s$SOC))       # get a vector of unique SOC
-    k <- gtools::mixedsort(unique(s$SOC))
-    L <- length(k)                 # how many unique SOC
+    k <- gtools::mixedsort(unique(s$SOC)) 
+    L <- length(k)                 # how many unique SOC 
     
     for (i in 1:L) {               # one by one analyze SOC groups
       
@@ -372,24 +368,37 @@ server <- function(input, output, session) {
         Tot <- ss1[rownames(ss1) %in% "Sum",]
         body <- ss1[!rownames(ss1) %in% "Sum",]
         z <- rbind( Tot , body)
-        rownames(z)[1] <- k[i]
-        rownames(z)[2] <- paste0("  ",rownames(ss1)[1])
+        rownames(z)[1] <- k[i]    
+        rownames(z)[2] <-  rownames(ss1)[1]   
         
-        fooz[[i]] <- z
+        fooz[[i]] <- z  
         
       } else {
         
-        sss <-unique(ss[,c("id","SOC","treatment")]) #  [1] drop PT
-        Tot <- addmargins(table(sss$treatment))    
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        # This step ensure if same SOC occurs more than once in a patient count only once
+        sss <-unique(ss[,c("id","SOC","treatment")]) #  [1] drop PT
+        Tot <- addmargins(table(sss$treatment))      #  [2]
+        
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        
         sss <- unique(ss[,c("id","PT","treatment")]) #  [1] drop SOC
         ss1 <- addmargins(table(sss$PT, sss$treatment))
-        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        body <- ss1[ c(1:(nrow(ss1)-1)),]                    # select all rows except last
-        body <- body[ gtools::mixedsort(row.names(body)), ]  # sort alphanumeric
-        z <- rbind( Tot , body)
-  
-        rownames(z)[1] <- k[i]    # add in SOC name
+        
+        if (nrow(ss1) %in% 2) {      
+          
+          rownames(ss1) <- ifelse(rownames(ss1) %in% 'Sum', k[i], rownames(ss1))
+          z <- ss1[order(rownames(ss1), decreasing=TRUE),]
+          
+        } else {
+          
+          body <- ss1[ c(1:(nrow(ss1)-1)),]   # select all rows except last
+          body <- body[ gtools::mixedsort(row.names(body)), ]  # sort alphanumeric
+          z <- rbind( Tot , body)
+          rownames(z)[1] <- k[i]    # add in SOC name
+        }
+        
+        
         
         fooz[[i]] <- z     # collect info
         
@@ -397,8 +406,9 @@ server <- function(input, output, session) {
       
       tmp <- do.call(rbind, fooz)      # bind the groups
       
-      foo99 <- data.frame(tmp)
+      foo99 <- data.frame(tmp)  
     }
+    
     
     return(list( foo99 = foo99, s=s, callx=callx, all=all, tmp=tmp,k=k))  # MOST OF THESE WERE USED TO TROUBLE SHOOT WE ONLY NEED foo99
     
@@ -533,59 +543,11 @@ server <- function(input, output, session) {
   
   CLOUD.SOC<- reactive({
  
-  all=dat2()$all
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Manage data for by System order class : Preferred terms, the right way
+  foo99=dat4()$foo99
+   
+  foo99s <-  foo99[substring(rownames(foo99),1,3) %in% "SOC",]
     
-  #  callx <- all[all$count.AE > 0,]  # dispense with all obs with no AEs
-  call <- all[!all$count.AE %in% 0,]  # dispense with all obs with no AEs
-  
-  s <- call[, c("id","SOC","PT","treatment")]  # drop count vars
-  
-  fooz<-list()                        # this will be used to collect data
-  
-  # analyse data in SOC chunks 
-  
-  k <- sort(unique(s$SOC))       # get a vector of unique SOC
-  k <- gtools::mixedsort(unique(s$SOC)) 
-  L <- length(k)                 # how many unique SOC 
-  
-  for (i in 1:L) {               # one by one analyze SOC groups
-    
-    ss <- s[s$SOC %in% k[i],]    # isolate a SOC chunk
-    
-    # special case if only 1 SOC row
-    if (nrow(ss) %in% 1) {
-      
-      ss1 <- addmargins(table(ss$PT, ss$treatment))
-      Tot <- ss1[rownames(ss1) %in% "Sum",]
-      
-      z <- ( Tot )
-      
-      fooz[[i]] <- z  
-      
-    } else {
-      
-      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      # This step ensure if same SOC occurs more than once in a patient count only once
-      sss <-unique(ss[,c("id","SOC","treatment")]) #  [1] drop PT
-      Tot <- addmargins(table(sss$treatment))      #  [2]
-      z <-  Tot
-      
-      rownames(z)[1] <- k[i]    # add in SOC name
-      fooz[[i]] <- z     # collect info
-      
-    }
-    
-    tmp <- do.call(rbind, fooz)      # bind the groups
-    
-    foo99s <- data.frame(tmp)  
-    
-  }
-  
-  rownames(foo99s) <- k      
-  arrange(foo99s, Sum) 
-
+ 
   return(list( foo99s = foo99s))
   
   
@@ -623,55 +585,14 @@ server <- function(input, output, session) {
   
   CLOUD.PF<- reactive({
     
-  all=dat2()$all
-  
-  call <- all[!all$count.AE %in% 0,]           # dispense with all obs with no AEs
-  
-  s <- call[, c("id","SOC","PT","treatment")]  # drop count vars
-  
-  fooz<-list()                                 # this will be used to collect data
-  
-  # get a vector of unique SOC
-  k <- gtools::mixedsort(unique(s$SOC)) 
-  L <- length(k)                 # how many unique SOC 
-  
-  for (i in 1:L) {               # one by one analyze SOC groups
+    foo99=dat4()$foo99
     
-    ss <- s[s$SOC %in% k[i],]    # isolate a SOC chunk
+    foo99p <-  foo99[substring(rownames(foo99),1,2) %in% "PT",]
     
-    # special case if only 1 SOC row
-    if (nrow(ss) %in% 1) {
-      
-      ss1 <- addmargins(table(ss$PT, ss$treatment))
-      body <- ss1[!rownames(ss1) %in% "Sum",]
-      z <- (body)
-      rownames(z)[2] <- paste0("  ",rownames(ss1)[1])   
-      
-      fooz[[i]] <- z  
-      
-    } else {
-      
-      sss <- unique(ss[,c("id","PT","treatment")]) #  [1] drop SOC
-      ss1 <- addmargins(table(sss$PT, sss$treatment))
-      
-      body <- ss1[ c(1:(nrow(ss1)-1)),]                    # select all rows except last
-      body <- body[ gtools::mixedsort(row.names(body)), ]  # sort alphanumeric
-      z <- rbind( body)
-      
-      fooz[[i]] <- z     # collect info
-      
-    }
     
-    tmp <- do.call(rbind, fooz)      # bind the groups
+    return(list( foo99p = foo99p))
     
-    foo99p <- data.frame(tmp)  
-  }
-  
-  arrange(foo99p, Sum) 
-
-  return(list( foo99p = foo99p))
-  
-  
+    
   })
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
@@ -704,16 +625,32 @@ server <- function(input, output, session) {
   #  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   output$help <- renderText({
-    HTML("Adverse event presentation may be confusing if you do not have experience seeing such a presentation before.")
+    HTML("Adverse event presentation may be confusing if you do not have experience seeing such a presentation before.
+         
+         
+         
+         Each patient is counted only once within each category. So when one patient has two headache AEs for example, 
+         then this patient is counted once under headache. Patient are also only counted once within each body system, 
+         similarly when a patient is having different AEs within the same body system. 
+         This means, that the numbers of the preferred terms may not sum up to the body system numbers. 
+         So the sum of PTs may not necessarily equal the corresponding SOC. 
+         So to build the table investigate first each SOC. So within an SOC count how many patients have at least one of the particular SOC. Second, investigate all PTs within each SOC. 
+         Report how many patients have at least one.  
+
+         Note also the 'Number of patients with at least one adverse event' may not match the sum of the SOC, as at least one patient is quite likely to have more than one SOC.
+
+Ways of saying the same thing: 'Patients with more than one occurrence of a preferred term are counted only once'.'A patient with multiple occurrences of an AE is counted only once in the AE category.'
+
+'Patients with any adverse event' is synonymous with 'Patients with at least one AE'")
   })
   
   
    
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##TESTING AND TROUBLESHOOTING
   # JUST A TEST output
-  output$AE3 <- renderTable({
-    dat5()$foo
-  }, rownames = TRUE, colnames = TRUE)
+  # output$AE3 <- renderTable({
+  #   dat5()$foo
+  # }, rownames = TRUE, colnames = TRUE)
   
   output$AE2 <- renderTable({
     CLOUD.SOC()$foo99s
