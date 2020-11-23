@@ -45,7 +45,7 @@ body {
 
 ```{r setup,echo=FALSE,include=FALSE}
 
-  set.seed(234)
+  set.seed(124)
   library(rms)          # automatically engages rms(Hmisc)
   library(tidyverse)
   library(kableExtra) 
@@ -75,10 +75,10 @@ Simple AE table example using kable in Rmarkdown
 
 ```{r, }
 
-  m    <- 10      # m SOC categories we create, each will have m preferred terms
-  n    <- 1000   # total sample size
-  rate <- 0.33    # AE poisson rate
-  J    <- 20      # maximum number of preferred terms that can occur
+  m    <- 5      # m SOC categories we create
+  n    <- 500    # total sample size
+  rate <- 0.333  # AE poisson rate
+  J    <- 5      # maximum number of preferred terms that can occur
 
   
 ```
@@ -112,7 +112,7 @@ Simple AE table example using kable in Rmarkdown
   
 ##########################################################################################################
 # make a second dictionary, maybe this is easier to explain the logic
-  N   <- m # number of SOC
+  N   <- m                           # number of SOC
   S   <- rep(1:N) 
   p   <- round(runif(N,2,J))    
   d1 <-  sort(rep(S, times=p))  
@@ -229,62 +229,66 @@ Simple AE table example using kable in Rmarkdown
   # s<-s[!(s$SOC=="" ),]  # no need for this as 
   #s <- s[gtools::mixedorder(s$SOC), ]  # sort before manipulation
   
-  fooz<-list()                        # this will be used to collect data
-  
-  # analyse data in SOC chunks 
+ fooz<-list()                        # this will be used to collect data
 
-  k <- sort(unique(s$SOC))       # get a vector of unique SOC
-  k <- gtools::mixedsort(unique(s$SOC)) 
-  L <- length(k)                 # how many unique SOC 
+# analyse data in SOC chunks 
+
+k <- sort(unique(s$SOC))       # get a vector of unique SOC
+k <- gtools::mixedsort(unique(s$SOC)) 
+L <- length(k)                 # how many unique SOC 
+
+for (i in 1:L) {               # one by one analyze SOC groups
   
-  for (i in 1:L) {               # one by one analyze SOC groups
-   
-    ss <- s[s$SOC %in% k[i],]    # isolate a SOC chunk
+  ss <- s[s$SOC %in% k[i],]    # isolate a SOC chunk
+  
+  # special case if only 1 SOC row
+  if (nrow(ss) %in% 1) {
+    
+    ss1 <- addmargins(table(ss$PT, ss$treatment))
+    Tot <- ss1[rownames(ss1) %in% "Sum",]
+    body <- ss1[!rownames(ss1) %in% "Sum",]
+    z <- rbind( Tot , body)
+    rownames(z)[1] <- k[i]    
+    rownames(z)[2] <-  rownames(ss1)[1]   
+    
+    fooz[[i]] <- z  
+    
+  } else {
+    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # This step ensure if same SOC occurs more than once in a patient count only once
+    sss <-unique(ss[,c("id","SOC","treatment")]) #  [1] drop PT
+    Tot <- addmargins(table(sss$treatment))      #  [2]
  
-       # special case if only 1 SOC row
-        if (nrow(ss) %in% 1) {
-          
-            ss1 <- addmargins(table(ss$PT, ss$treatment))
-            Tot <- ss1[rownames(ss1) %in% "Sum",]
-            body <- ss1[!rownames(ss1) %in% "Sum",]
-            z <- rbind( Tot , body)
-            rownames(z)[1] <- k[i]    
-            rownames(z)[2] <- paste0("  ",rownames(ss1)[1])   
-            
-            fooz[[i]] <- z  
-            
-        } else {
-          
-          
-           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-           # This step ensure if same SOC occurs more than once in a patient count only once
-           sss <-unique(ss[,c("id","SOC","treatment")]) #  [1] drop PT
-           Tot <- addmargins(table(sss$treatment))      #  [2]
-          
-           # this would allow duplicates counted within patients, 
-           # not what is typically reported, code out [1], [2] and allow [3]
-           # Tot <- ss1[nrow(ss1),]                      # [3]
-           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-           
-           sss <- unique(ss[,c("id","PT","treatment")]) #  [1] drop SOC
-           ss1 <- addmargins(table(sss$PT, sss$treatment))
-           
-           body <- ss1[ c(1:(nrow(ss1)-1)),]   # select all rows except last
-           body <- body[ gtools::mixedsort(row.names(body)), ]  # sort alphanumeric
-           z <- rbind( Tot , body)
-          
-           
-           rownames(z)[1] <- k[i]    # add in SOC name
-           # next line would add indent PTs, we do this later
-           #rownames(z)[2:nrow(z)] <- paste0("  ",rownames(z)[2:nrow(z)])   
-           
-           fooz[[i]] <- z     # collect info
-        
-        }
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    sss <- unique(ss[,c("id","PT","treatment")]) #  [1] drop SOC
+    ss1 <- addmargins(table(sss$PT, sss$treatment))
+    
+    if (nrow(ss1) %in% 2) {      
+      
+      rownames(ss1) <- ifelse(rownames(ss1) %in% 'Sum', k[i], rownames(ss1))
+      z <- ss1[order(rownames(ss1), decreasing=TRUE),]
+     
+    } else {
+      
+      body <- ss1[ c(1:(nrow(ss1)-1)),]   # select all rows except last
+      body <- body[ gtools::mixedsort(row.names(body)), ]  # sort alphanumeric
+      z <- rbind( Tot , body)
+      rownames(z)[1] <- k[i]    # add in SOC name
+    }
+    
+      
+    
+    fooz[[i]] <- z     # collect info
+    
+  }
+  
+ 
     
        tmp <- do.call(rbind, fooz)      # bind the groups
                                     
-       foo99 <- data.frame(tmp)  
+      best <- foo99 <- data.frame(tmp)  
   }
   
 
@@ -422,17 +426,22 @@ This will match the SOC simple tabulation further below. It may coincidentally m
            Tot <- ss1[nrow(ss1),]                      # [3]
            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
            
-           sss <-  (ss[,c("PT","treatment")]) #  [1] drop SOC, note dropped unique
-           ss1 <- addmargins(table(sss$PT, sss$treatment))
-           
-           body <- ss1[ c(1:(nrow(ss1)-1)),]   # select all rows except last
-           body <- body[ gtools::mixedsort(row.names(body)), ]  # sort alphanumeric
-
-           z <- rbind( Tot , body)
-           rownames(z)[1] <- k[i]    # add in SOC name
-           # next line would add indent PTs, we do this later
-           #rownames(z)[2:nrow(z)] <- paste0("  ",rownames(z)[2:nrow(z)])   
-           fooz[[i]] <- z     # collect info
+            sss <- unique(ss[,c("id","PT","treatment")]) #  [1] drop SOC
+            ss1 <- addmargins(table(sss$PT, sss$treatment))
+            
+            if (nrow(ss1) %in% 2) {      
+              
+            rownames(ss1) <- ifelse(rownames(ss1) %in% 'Sum', k[i], rownames(ss1))
+            z <- ss1[order(rownames(ss1), decreasing=TRUE),]
+             
+            } else {
+      
+            body <- ss1[ c(1:(nrow(ss1)-1)),]   # select all rows except last
+            body <- body[ gtools::mixedsort(row.names(body)), ]  # sort alphanumeric
+            z <- rbind( Tot , body)
+            rownames(z)[1] <- k[i]    # add in SOC name
+    }
+           fooz[[i]] <- z             # collect info
         
         }
     
@@ -498,54 +507,7 @@ This will match the SOC simple tabulation further below. It may coincidentally m
     
    add_indent(tab_1, which(pt), level_of_indent = 1)
      
-
-```
-
-#  Word cloud SOC, (to do ensure this is based on counts in table)
-
-```{r, }      
-   
-  # Create a vector containing only the text
-  text <- all$SOC
-  text <- text [! text %in% ""]
-
-  # Create a corpus  
-  docs <- Corpus(VectorSource(text))
-  dtm <- TermDocumentMatrix(docs) 
-  matrix <- as.matrix(dtm) 
-  words <- sort(rowSums(matrix),decreasing=TRUE) 
-  df <- data.frame(word = names(words),freq=words)
-
-  wordcloud(words = df$word, freq = df$freq, min.freq = 1,
-            max.words=200, random.order=FALSE, rot.per=0.35,
-            colors=brewer.pal(8, "Dark2"))
-
-#  wordcloud2(data=df, size=1.6, color='random-dark')
-
-   
-```
-
-#  Word cloud preferred terms (to do ensure this is based on counts in table)
-
-```{r, }      
-   
-  # Create a vector containing only the text
-  text <- all$PT
-  text <- text [! text %in% ""]
-
-  # Create a corpus  
-  docs <- Corpus(VectorSource(text))
-  dtm <- TermDocumentMatrix(docs) 
-  matrix <- as.matrix(dtm) 
-  words <- sort(rowSums(matrix),decreasing=TRUE) 
-  df <- data.frame(word = names(words),freq=words)
-
-  wordcloud(words = df$word, freq = df$freq, min.freq = 1,
-            max.words=200, random.order=FALSE, rot.per=0.35,
-            colors=brewer.pal(8, "Dark2"))
-
-#  wordcloud2(data=df, size=1.6, color='random-dark')
-
+ 
 
 ```
 
@@ -766,56 +728,9 @@ f
 ```{r, eval=TRUE}  
  
   
-  call <- all[!all$count.AE %in% 0,]  # dispense with all obs with no AEs
+  foo99s <-  best[substring(rownames(best),1,3) %in% "SOC",]
   
-  s <- call[, c("id","SOC","PT","treatment")]  # drop count vars
-
-  fooz<-list()                        # this will be used to collect data
-  
-  # analyse data in SOC chunks 
-
-  k <- sort(unique(s$SOC))       # get a vector of unique SOC
-  k <- gtools::mixedsort(unique(s$SOC)) 
-  L <- length(k)                 # how many unique SOC 
-  
-  for (i in 1:L) {               # one by one analyze SOC groups
    
-    ss <- s[s$SOC %in% k[i],]    # isolate a SOC chunk
- 
-       # special case if only 1 SOC row
-        if (nrow(ss) %in% 1) {
-          
-            ss1 <- addmargins(table(ss$PT, ss$treatment))
-            Tot <- ss1[rownames(ss1) %in% "Sum",]
-          
-            z <- ( Tot )
-
-            fooz[[i]] <- z  
-            
-        } else {
-          
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-           # This step ensure if same SOC occurs more than once in a patient count only once
-           sss <-unique(ss[,c("id","SOC","treatment")]) #  [1] drop PT
-           Tot <- addmargins(table(sss$treatment))      #  [2]
-          
-           z <-  ( Tot  )
-          
-           rownames(z)[1] <- k[i]    # add in SOC name
-
-           
-           fooz[[i]] <- z     # collect info
-        
-        }
-    
-       tmp <- do.call(rbind, fooz)      # bind the groups
-                                    
-       foo99s <- data.frame(tmp)  
-      
-  }
-  
-     rownames(foo99s) <- k      
-   arrange(foo99s, Sum) 
 
 ```
 
@@ -824,70 +739,7 @@ f
 ```{r, eval=TRUE}  
  
   
-  call <- all[!all$count.AE %in% 0,]  # dispense with all obs with no AEs
-  
-  s <- call[, c("id","SOC","PT","treatment")]  # drop count vars
-  
- 
-  
-  fooz<-list()                        # this will be used to collect data
-  
-  # get a vector of unique SOC
-  k <- gtools::mixedsort(unique(s$SOC)) 
-  L <- length(k)                 # how many unique SOC 
-  
-  for (i in 1:L) {               # one by one analyze SOC groups
-   
-    ss <- s[s$SOC %in% k[i],]    # isolate a SOC chunk
- 
-       # special case if only 1 SOC row
-        if (nrow(ss) %in% 1) {
-          
-            ss1 <- addmargins(table(ss$PT, ss$treatment))
-        #    Tot <- ss1[rownames(ss1) %in% "Sum",]
-            body <- ss1[!rownames(ss1) %in% "Sum",]
-            z <- (body)
-         #   rownames(z)[1] <- k[i]    
-            rownames(z)[2] <- paste0("  ",rownames(ss1)[1])   
-            
-            fooz[[i]] <- z  
-            
-        } else {
-          
-          
-           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-           # This step ensure if same SOC occurs more than once in a patient count only once
-         #  sss <-unique(ss[,c("id","SOC","treatment")]) #  [1] drop PT
-          # Tot <- addmargins(table(sss$treatment))      #  [2]
-          
-           # this would allow duplicates counted within patients, 
-           # not what is typically reported, code out [1], [2] and allow [3]
-           # Tot <- ss1[nrow(ss1),]                      # [3]
-           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-           
-           sss <- unique(ss[,c("id","PT","treatment")]) #  [1] drop SOC
-           ss1 <- addmargins(table(sss$PT, sss$treatment))
-           
-           body <- ss1[ c(1:(nrow(ss1)-1)),]   # select all rows except last
-           body <- body[ gtools::mixedsort(row.names(body)), ]  # sort alphanumeric
-           z <- rbind( body)
-          
-           
-       #    rownames(z)[1] <- k[i]    # add in SOC name
-           # next line would add indent PTs, we do this later
-           #rownames(z)[2:nrow(z)] <- paste0("  ",rownames(z)[2:nrow(z)])   
-           
-           fooz[[i]] <- z     # collect info
-        
-        }
-    
-       tmp <- do.call(rbind, fooz)      # bind the groups
-                                    
-       foo99p <- data.frame(tmp)  
-  }
-  
-     arrange(foo99p, Sum) 
-   
+   foo99p <-  best[substring(rownames(best),1,2) %in% "PT",]
 
   
 ```
