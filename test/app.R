@@ -23,8 +23,6 @@
   dashboardHeader(title = "Adverse Events"), 
   dashboardSidebar(width=300,
                    sidebarMenu(id = "SideBarMENU", 
-                               
-                 
                                #~~~~~~~~~~~~~
                                menuItem("Define parameters ", icon = icon("bar-chart-o"),
                                         
@@ -45,132 +43,121 @@
 
                                ),
                                #~~~~~~~~~~~~~
-                               menuItem("Landing page: AE Table & Listing", tabName = "OVERVIEW", selected = TRUE),
+                               menuItem("Landing page: AE table & Dynamic listing", tabName = "OVERVIEW", selected = TRUE),
                                #~~~~~~~~~~~~~
                                menuItem("Supporting outputs",  startExpanded = FALSE,
-                                        menuSubItem("Dynamic listing", tabName = "RESULTS"),
-                                        menuSubItem("testing" ,        tabName = "RESULTS2"),
-                                        menuSubItem("SOC WORD CLOUD",  tabName = "RESULTS3"),
-                                        menuSubItem("PF WORD CLOUD" ,  tabName = "RESULTS4")
+                                       
+                                        menuSubItem("WORDCLOUD",        tabName = "RESULTS3"),
+                                        menuSubItem("Dynamic listing",  tabName = "RESULTS")
+                                      #  menuSubItem("testing" ,         tabName = "RESULTS2")
+                                      #  menuSubItem("PF WORD CLOUD" ,  tabName = "RESULTS4")
                                ), 
-                              
                                #~~~~~~~~~~~~~
                                menuItem("Grab the code", icon = icon("bar-chart-o"),
             
                                         menuSubItem("Shiny",
                                                     icon = icon("send",lib='glyphicon'),
-                                                    href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/dashboard1/app.R"),
+                                                    href = "https://raw.githubusercontent.com/eamonn2014/AEtabulation/master/test/app.R"),
             
-                                        menuSubItem("R",
+                                        menuSubItem("Rmarkdown",
                                                     icon = icon("send",lib='glyphicon'),
-                                                    href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/Rcode.R") #,
-            
-                                        # menuSubItem("Click for bells and whistles main app.",
-                                        #             icon = icon("send",lib='glyphicon'),
-                                        #             href = "https://eamonn3.shinyapps.io/LoQs/")
+                                                    href = "https://raw.githubusercontent.com/eamonn2014/AEtabulation/master/AE%20tables.Rmd") #,
+             
                                ),
                                #~~~~~~~~~~~~~
                                menuItem("Wiki", tabName = "HELP")
                                ),
                                #~~~~~~~~~~~~~
-                   tags$head(
-                     tags$style(HTML('#resample{background-color:palegreen}'))
-                   ),
+                                 tags$head(
+                                   tags$style(HTML('#resample{background-color:palegreen}'))
+                                 ),
+                                 
+                                 actionButton("resample"," Hit to sample another data set", icon = icon("th"),  width =250  )
                    
-                   actionButton("resample"," Hit to sample another data set", icon = icon("th"),  width =250  )
-                   
-  ),
-  dashboardBody(
-    
-    fluidRow(
-      infoBox(
-        "Adverse Event", "Tabultation", icon = icon("line-chart"),
-        width = 4
-      ),
-      infoBox(
-        "Listing", "More dynamic listing", icon = icon("user-friends"),
-        width = 4
-      ),
-      infoBox(
-        "Wordcloud", "Informal yet insightful visualisation", icon = icon("book-open"),
-        width = 4
-      )),
-    
+                                  ),
+  
+          dashboardBody(
+            #~~~~~~~~~~~~~
+              fluidRow(
+                infoBox(
+                  "Adverse Event", "Tabultation", icon = icon("line-chart"),
+                  width = 4
+                ),
+                infoBox(
+                  "Listing", "More dynamic listing", icon = icon("user-friends"),
+                  width = 4
+                ),
+                infoBox(
+                  "Wordcloud", "Informal yet insightful visualisation", icon = icon("book-open"),
+                  width = 4
+                )),
+              #~~~~~~~~~~~~~
+               tabItems(
+                  tabItem("OVERVIEW",
+                fluidRow(        
+                  box(
+                    title = "Table"
+                    ,status = "primary"
+                    ,solidHeader = TRUE 
+                    ,collapsible = TRUE 
+                    , htmlOutput("tableset") 
+                  )
+                  
+                ,box(
+                  title = "Dynamic listing, patients with at least one AE"
+                  ,status = "primary"
+                  ,solidHeader = TRUE 
+                  ,collapsible = TRUE 
+                  ,DT::dataTableOutput("mytable2")
+                ) 
+                )
+              ),
+            #~~~~~~~~~~~~~
+              tabItem("RESULTS3",
+                      fluidRow(        
+                        box(
+                          title = "SYSTEM ORGAN CLASS WORDCLOUD"
+                          ,status = "primary"
+                          ,solidHeader = TRUE 
+                          ,collapsible = TRUE 
+                          , plotOutput("SOC", height = "500px") #, width  ="800px")
+                        )
+                        
+                        ,box(
+                          title = "PREFERRED TERM WORDCLOUD"
+                          ,status = "primary"
+                          ,solidHeader = TRUE 
+                          ,collapsible = TRUE 
+                          ,plotOutput("PF", height = "500px")
+                        ) 
+                      )
+              ),
+            #~~~~~~~~~~~~~
      
-    
-    
-    
-    tabItems(
-      
-      
-        tabItem("OVERVIEW",
-      fluidRow(        
-        box(
-          title = "Table"
-          ,status = "primary"
-          ,solidHeader = TRUE 
-          ,collapsible = TRUE 
-          , htmlOutput("tableset") 
-        )
-        
-        ,box(
-          title = "Dynamic listing, patients with at least one AE"
-          ,status = "primary"
-          ,solidHeader = TRUE 
-          ,collapsible = TRUE 
-          ,DT::dataTableOutput("mytable2")
-        ) 
-        )
-      ),
-      
-      
-     
-      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      
-      # tabItem("OVERVIEW",   
-      #         column(
-      #           width = 12,
-      #         box(" " ,
-      #             htmlOutput("tableset") 
-      #             ,status = "primary"
-      #             ,solidHeader = FALSE 
-      #             ,collapsible = TRUE 
-      #             
-      #             )
-      #         
-      #         
-      #         )
-      # ),
-      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      tabItem("RESULTS", 
-              box(" ", 
-                  DT::dataTableOutput("mytable")
-               )
-      ),
-      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      tabItem("RESULTS2", 
-              box("Results box", 
-                  htmlOutput("AE2")
-               )
-      ),
-      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      tabItem("RESULTS3", 
-              box(" ", 
-                  plotOutput("SOC", height = "500px") #, width  ="800px")
-              )
-      ),
-      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      tabItem("RESULTS4", 
-              box(" ", 
-                  plotOutput("PF", height = "500px")
-              )
-      ),
-      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      tabItem("HELP", 
-              box("", 
-                  textOutput("help"))
-      ) 
-      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          tabItem("RESULTS", 
+                  box(" ", 
+                      DT::dataTableOutput("mytable")
+                   )
+          ),
+          #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          tabItem("RESULTS2", 
+                  box("Results box", 
+                      htmlOutput("AE2")
+                   )
+          ),
+          #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          tabItem("RESULTS4", 
+                  box(" ", 
+                   #   plotOutput("PF", height = "500px")
+                  )
+          ),
+          #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          tabItem("HELP", 
+                  box("", 
+                      textOutput("help"))
+          ) 
+          #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     )
   )
   
@@ -352,8 +339,7 @@ server <- function(input, output, session) {
     fooz<-list()                        # this will be used to collect data
     
     # analyse data in SOC chunks 
-    
-    k <- sort(unique(s$SOC))       # get a vector of unique SOC
+    #k <- sort(unique(s$SOC))       # get a vector of unique SOC
     k <- gtools::mixedsort(unique(s$SOC)) 
     L <- length(k)                 # how many unique SOC 
     
@@ -397,10 +383,7 @@ server <- function(input, output, session) {
           z <- rbind( Tot , body)
           rownames(z)[1] <- k[i]    # add in SOC name
         }
-        
-        
-        
-        fooz[[i]] <- z     # collect info
+         fooz[[i]] <- z     # collect info
         
       }
       
@@ -409,8 +392,7 @@ server <- function(input, output, session) {
       foo99 <- data.frame(tmp)  
     }
     
-    
-    return(list( foo99 = foo99, s=s, callx=callx, all=all, tmp=tmp,k=k))  # MOST OF THESE WERE USED TO TROUBLE SHOOT WE ONLY NEED foo99
+     return(list( foo99 = foo99, s=s, callx=callx, all=all, tmp=tmp,k=k))  # MOST OF THESE WERE USED TO TROUBLE SHOOT WE ONLY NEED foo99
     
   })
   
@@ -467,7 +449,6 @@ server <- function(input, output, session) {
     t5<-"- Preferred terms are sorted within system organ class in alphabetical order"
     t6<-"- MedDRA version XY.Z has been used for reporting of adverse events"
     t7<-"- Study ABCMADEUPEFG; Database lock: 10Nov2020"
-    
     
     tab_1 <-  kable(d ,
                     format = "html",
@@ -535,7 +516,7 @@ server <- function(input, output, session) {
                     # dom = 't',
                     columnDefs = list(list(type = 'natural', targets = c(4,5)))
                   ))
-  })
+    })
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   # SOC WORD CLOUD, CREATE DATA
@@ -543,15 +524,13 @@ server <- function(input, output, session) {
   
   CLOUD.SOC<- reactive({
  
-  foo99=dat4()$foo99
-   
-  foo99s <-  foo99[substring(rownames(foo99),1,3) %in% "SOC",]
+    foo99=dat4()$foo99
+     
+    foo99s <-  foo99[substring(rownames(foo99),1,3) %in% "SOC",]
+      
+    return(list( foo99s = foo99s))
     
- 
-  return(list( foo99s = foo99s))
-  
-  
-})
+  })
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   # SOC WORD CLOUD, CREATE PLOT
@@ -589,10 +568,8 @@ server <- function(input, output, session) {
     
     foo99p <-  foo99[substring(rownames(foo99),1,2) %in% "PT",]
     
-    
     return(list( foo99p = foo99p))
-    
-    
+
   })
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
@@ -616,9 +593,7 @@ server <- function(input, output, session) {
     wordcloud(words = df$word, freq = df$freq, min.freq = 1,
               max.words=200, random.order=FALSE, rot.per=0.35,
               colors=brewer.pal(8, "Dark2"))
-  
-  
-  
+     
   })
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
@@ -652,15 +627,11 @@ Ways of saying the same thing: 'Patients with more than one occurrence of a pref
   #   dat5()$foo
   # }, rownames = TRUE, colnames = TRUE)
   
-  output$AE2 <- renderTable({
-    CLOUD.SOC()$foo99s
-  }, rownames = TRUE, colnames = TRUE)
+  # output$AE2 <- renderTable({
+  #   CLOUD.SOC()$foo99s
+  # }, rownames = TRUE, colnames = TRUE)
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
-  
-  
-  
-  
-  
+ 
 }
 
 shinyApp(ui, server)
