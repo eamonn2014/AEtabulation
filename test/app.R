@@ -53,7 +53,7 @@
                                       #  menuSubItem("PF WORD CLOUD" ,  tabName = "RESULTS4")
                                ), 
                                #~~~~~~~~~~~~~
-                               menuItem("3 Grab the code", icon = icon("bar-chart-o"),
+                               menuItem("4 Grab the code", icon = icon("bar-chart-o"),
             
                                         menuSubItem("Shiny",
                                                     icon = icon("send",lib='glyphicon'),
@@ -73,7 +73,7 @@
                                
                                
                                #~~~~~~~~~~~~~
-                               menuItem("4 Wiki", tabName = "HELP",  icon = icon("bar-chart-o"))
+                               menuItem("5 Wiki", tabName = "HELP",  icon = icon("bar-chart-o"))
                    ),
                                #~~~~~~~~~~~~~
                                  tags$head(
