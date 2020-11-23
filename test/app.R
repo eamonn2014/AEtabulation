@@ -629,7 +629,7 @@ Ways of saying the same thing: 'Patients with more than one occurrence of a pref
   
   
   output$help2 <- renderText({
-    HTML("To simulate the data in click 'Define parameters' and enter the maximum number of SOCs, 
+    HTML("To simulate the data click 'Define parameters' and enter the maximum number of SOCs, 
     the maximum number of PTs and the rate of AEs based on the Poisson distribution 
     (no difference in two treatement groups) and the total number of patients. A new sample can be simulated by hitting the green button. The dynamic listing is useful to help
          understand the table construction. By sorting on the two duplication columns any duplication within patient is evident. Filtering is also possible
