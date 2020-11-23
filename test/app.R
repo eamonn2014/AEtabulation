@@ -92,7 +92,7 @@
                   width = 4
                 ),
                 infoBox(
-                  "Listing", "More dynamic listing", icon = icon("user-friends"),
+                  "Listing", "Dynamic", icon = icon("user-friends"),
                   width = 4
                 ),
                 infoBox(
@@ -629,11 +629,11 @@ Ways of saying the same thing: 'Patients with more than one occurrence of a pref
   
   
   output$help2 <- renderText({
-    HTML("To simulate the data in the Define Parameters section you can enter the maximum number of SOCs, 
-    the maximum number of PTs and the rate of AEs, based on the Poisson distribution 
+    HTML("To simulate the data in click 'Define parameters' and enter the maximum number of SOCs, 
+    the maximum number of PTs and the rate of AEs based on the Poisson distribution 
     (no difference in two treatement groups) and the total number of patients. A new sample can be simulated by hitting the green button. The dynamic listing is useful to help
          understand the table construction. By sorting on the two duplication columns any duplication within patient is evident. Filtering is also possible
-         for exampl a patient ID can be entered and the data for said patient interoggated. WordClouds supplement the table, showing most prevelant SOCs and PFs according to font size.")
+         for example a patient ID can be entered and the data for said patient interogated. Word Clouds supplement the table, present most prevelant SOCs and PFs shown by increasing font size.")
   })
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##TESTING AND TROUBLESHOOTING
