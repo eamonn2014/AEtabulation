@@ -24,7 +24,7 @@
   dashboardSidebar(width=300,
                    sidebarMenu(id = "SideBarMENU", 
                                #~~~~~~~~~~~~~
-                               menuItem("Define parameters ", icon = icon("bar-chart-o"),
+                               menuItem("1 Define parameters ", icon = icon("bar-chart-o"),
                                         
                                         tags$div(
                                           textInput(inputId="m", label='Number of System Organ Classes', width = '95%' , value="5"),
@@ -43,17 +43,17 @@
 
                                ),
                                #~~~~~~~~~~~~~
-                               menuItem("Landing page: AE table & Dynamic listing", tabName = "OVERVIEW", selected = TRUE),
+                               menuItem("2 AE table & Dynamic listing", tabName = "OVERVIEW",  icon = icon("bar-chart-o"), selected = TRUE),
                                #~~~~~~~~~~~~~
-                               menuItem("Supporting outputs",  startExpanded = FALSE,
+                               menuItem("3 Supporting outputs",  startExpanded = FALSE,  icon = icon("bar-chart-o"),
                                        
-                                        menuSubItem("WORDCLOUD",        tabName = "RESULTS3"),
-                                        menuSubItem("Dynamic listing",  tabName = "RESULTS")
+                                        menuSubItem("i Word cloud",        tabName = "RESULTS3"),
+                                        menuSubItem("ii Dynamic listing (repeat)",  tabName = "RESULTS")
                                       #  menuSubItem("testing" ,         tabName = "RESULTS2")
                                       #  menuSubItem("PF WORD CLOUD" ,  tabName = "RESULTS4")
                                ), 
                                #~~~~~~~~~~~~~
-                               menuItem("Grab the code", icon = icon("bar-chart-o"),
+                               menuItem("3 Grab the code", icon = icon("bar-chart-o"),
             
                                         menuSubItem("Shiny",
                                                     icon = icon("send",lib='glyphicon'),
@@ -64,23 +64,31 @@
                                                     href = "https://raw.githubusercontent.com/eamonn2014/AEtabulation/master/AE%20tables.Rmd") #,
              
                                ),
+                               
+                               # tags$head(
+                               #   tags$style(HTML('#resample{background-color:palegreen}'))
+                               # ),
+                               # 
+                               # actionButton("resample"," Hit to sample another data set", icon = icon("th"),  width =250  ),
+                               
+                               
                                #~~~~~~~~~~~~~
-                               menuItem("Wiki", tabName = "HELP")
-                               ),
+                               menuItem("4 Wiki", tabName = "HELP",  icon = icon("bar-chart-o"))
+                   ),
                                #~~~~~~~~~~~~~
                                  tags$head(
-                                   tags$style(HTML('#resample{background-color:palegreen}'))
-                                 ),
+                                    tags$style(HTML('#resample{background-color:palegreen}'))
+                                  ),
                                  
-                                 actionButton("resample"," Hit to sample another data set", icon = icon("th"),  width =250  )
-                   
+                                  actionButton("resample"," Hit to sample another data set", icon = icon("th"),  width =250  )
+
                                   ),
   
           dashboardBody(
             #~~~~~~~~~~~~~
               fluidRow(
                 infoBox(
-                  "Adverse Event", "Tabultation", icon = icon("line-chart"),
+                  "Adverse Event", "Tabulation", icon = icon("line-chart"),
                   width = 4
                 ),
                 infoBox(
@@ -155,7 +163,9 @@
           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           tabItem("HELP", 
                   box("", 
-                      textOutput("help"))
+                      textOutput("help"),
+                      br(),
+                      textOutput("help2"))
           ) 
           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     )
@@ -604,15 +614,13 @@ server <- function(input, output, session) {
          
          
          
-         Each patient is counted only once within each category. So when one patient has two headache AEs for example, 
-         then this patient is counted once under headache. Patient are also only counted once within each body system, 
-         similarly when a patient is having different AEs within the same body system. 
-         This means, that the numbers of the preferred terms may not sum up to the body system numbers. 
-         So the sum of PTs may not necessarily equal the corresponding SOC. 
+         Here each patient is counted only once within each category. So when one patient has two headache AEs for example, 
+         then this patient is counted once under headache. This means, that the numbers of the preferred terms may not sum up to the body system numbers. 
+          
          So to build the table investigate first each SOC. So within an SOC count how many patients have at least one of the particular SOC. Second, investigate all PTs within each SOC. 
          Report how many patients have at least one.  
 
-         Note also the 'Number of patients with at least one adverse event' may not match the sum of the SOC, as at least one patient is quite likely to have more than one SOC.
+         Note also the 'Number of patients with at least one adverse event' may not match the sum of the SOCs, as at least one patient is quite likely to have more than one SOC.
 
 Ways of saying the same thing: 'Patients with more than one occurrence of a preferred term are counted only once'.'A patient with multiple occurrences of an AE is counted only once in the AE category.'
 
@@ -620,7 +628,14 @@ Ways of saying the same thing: 'Patients with more than one occurrence of a pref
   })
   
   
-   
+  output$help2 <- renderText({
+    HTML("To simulate the data in the Define Parameters section you can enter the maximum number of SOCs, 
+    the maximum number of PTs and the rate of AEs, based on the Poisson distribution 
+    (no difference in two treatement groups) and the total number of patients. A new sample can be simulated by hitting the green button. The dynamic listing is useful to help
+         understand the table construction. By sorting on the two duplication columns any duplication within patient is evident. Filtering is also possible
+         for exampl a patient ID can be entered and the data for said patient interoggated. WordClouds supplement the table, showing most prevelant SOCs and PFs according to font size.")
+  })
+  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##TESTING AND TROUBLESHOOTING
   # JUST A TEST output
   # output$AE3 <- renderTable({
