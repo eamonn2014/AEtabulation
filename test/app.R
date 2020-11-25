@@ -25,20 +25,17 @@
                    sidebarMenu(id = "SideBarMENU", 
                                #~~~~~~~~~~~~~
                                menuItem("1 Define parameters ", icon = icon("bar-chart-o"),
-                                        
-                                        tags$div(
-                                          textInput(inputId="m", label='Number of System Organ Classes', width = '95%' , value="5"),
-                                        ),
-                                        
                                         tags$div(
                                           textInput(inputId='n', label="Total sample size", width = '95%' , "500"),
                                         ),
-                                        
                                         tags$div(
                                           textInput(inputId='rate', label='Adverse event rate', width = '95%' , ".333"),
                                         ),
                                         tags$div(
-                                          textInput(inputId="J", label='Maximum number of Preferred Terms', width = '95%' , value="5"),
+                                          textInput(inputId="m", label='Maximum No. of System Organ Classes', width = '95%' , value="5"),
+                                        ),
+                                        tags$div(
+                                          textInput(inputId="J", label='Maximum No. of Preferred Terms', width = '95%' , value="5"),
                                         )
 
                                ),
